@@ -1,8 +1,7 @@
 {
-  "version": 2,
   "builds": [
     {
-      "src": "project/wsgi.py",
+      "src": "vercel/wsgi.py",
       "use": "@vercel/python",
       "config": {
         "maxLambdaSize": "15mb",
@@ -12,16 +11,8 @@
   ],
   "routes": [
     {
-      "src": "/static/(.*)",
-      "dest": "/static/$1"
-    },
-    {
       "src": "/(.*)",
-      "dest": "project/wsgi.py"
+      "dest": "vercel/wsgi.py"
     }
-  ],
-  "env": {
-    "DJANGO_SETTINGS_MODULE": "project.settings",
-    "PYTHONPATH": "."
-  }
+  ]
 }
