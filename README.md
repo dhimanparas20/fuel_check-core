@@ -1,6 +1,9 @@
 # Fuel Check Core
 
-Fuel Check Core is a Django-based web application that allows users to store and manage their vehicles' fuel filling records, track mileage, and monitor various vehicle-related details. This project is designed to help users keep a digital log of their vehicle's fuel consumption, service history, and other important information for better maintenance and efficiency tracking.
+Fuel Check Core is a Django-based web application that allows users to store and manage their vehicles' fuel filling
+records, track mileage, and monitor various vehicle-related details. This project is designed to help users keep a
+digital log of their vehicle's fuel consumption, service history, and other important information for better maintenance
+and efficiency tracking.
 
 ## Features
 
@@ -22,8 +25,9 @@ Fuel Check Core is a Django-based web application that allows users to store and
 ## Getting Started
 
 ### Prerequisites
+
 - Python 3.x
-- pip
+- uv (dependency manager)
 - MySQL (or SQLite for development)
 - (Optional) Docker for containerized setup
 
@@ -34,22 +38,22 @@ Fuel Check Core is a Django-based web application that allows users to store and
    git clone <repo-url>
    cd fuel_check-core
    ```
-2. Install dependencies:
+2. Install dependencies using uv:
    ```bash
-   pip install -r requirements.txt
+   uv sync
    ```
 3. Configure your database in `project/settings.py` (MySQL or SQLite).
 4. Run migrations:
    ```bash
-   python manage.py migrate
+   uv run manage.py migrate
    ```
 5. Create a superuser:
    ```bash
-   python manage.py createsuperuser
+   uv run manage.py createsuperuser --username admin --email admin@example.com
    ```
 6. Start the development server:
    ```bash
-   python manage.py runserver
+   uv run manage.py runserver
    ```
 
 ### API Endpoints
@@ -58,6 +62,7 @@ Fuel Check Core is a Django-based web application that allows users to store and
 - You can extend the project with views and routers for RESTful APIs.
 
 ### Admin Panel
+
 - Access the admin panel at `/admin/` to manage users, vehicles, and transactions.
 
 ## Project Structure
