@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 import os
+from datetime import timedelta
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -26,7 +27,7 @@ SECRET_KEY = "django-insecure-sm!+nms&#cu!4=$fr^8e&9jw-^lmuu_$6cn5zhd!akm7gpmfwz
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -43,9 +44,7 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
-    "whitenoise.runserver_nostatic",
     "django.contrib.staticfiles",
-    "drf_yasg",
 ]
 
 MIDDLEWARE = [
@@ -64,7 +63,7 @@ ROOT_URLCONF = "project.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [os.path.join(BASE_DIR, "templates")],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -149,7 +148,6 @@ REST_FRAMEWORK = {
     "DATETIME_FORMAT": "%d-%m-%Y %H:%M:%S",
 }
 
-from datetime import timedelta
 
 # How long is the user token valid
 SIMPLE_JWT = {
@@ -159,7 +157,6 @@ SIMPLE_JWT = {
     "BLACKLIST_AFTER_ROTATION": False,
 }
 
-TEMPLATES[0]["DIRS"] = [os.path.join(BASE_DIR, "templates")]
 
 # Static files configuration
 STATIC_URL = "/static/"
