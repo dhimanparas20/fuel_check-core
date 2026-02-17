@@ -156,38 +156,40 @@ $(document).ready(function() {
                     $('#vehiclesList').append('<div class="col-12 text-center text-secondary py-5 empty-state">No vehicles yet — add your first ride to begin tracking.</div>');
                 } else {
                     data.forEach(function(vehicle, index) {
-                        const styles = buildVehicleCardStyle(vehicle.color, index);
+                        const fuelTypeIcon = {
+                            'petrol': '⛽',
+                            'diesel': '🛢️',
+                            'cng': '🔵'
+                        }[vehicle.fuel_type] || '⛽';
+
+                        const colorDot = vehicle.color ? `<span class="vehicle-color-dot" style="background-color: ${vehicle.color.toLowerCase()}; display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; border: 1px solid rgba(255,255,255,0.3);"></span>` : '';
+
                         $('#vehiclesList').append(`
-                            <div class="col-12 col-md-6 col-lg-4" style="${styles.column}">
-                                <div class="card h-100 shadow-sm vehicle-card" data-id="${vehicle.id}" style="${styles.card}" role="button" tabindex="0" aria-label="Open transactions for ${vehicle.name}">
-                                    <div class="card-body d-flex flex-column gap-3">
-                                        <div class="vehicle-card-top d-flex justify-content-between align-items-start">
-                                            <div>
-                                                <h5 class="card-title mb-1 text-capitalize">${vehicle.name}</h5>
-                                                <div class="card-subtitle small text-uppercase tracking-wide">Reg · <span class="fw-semibold">${vehicle.regno}</span></div>
-                                            </div>
-                                            <span class="vehicle-card-chip">${(vehicle.fuel_type || '').toUpperCase()}</span>
-                                        </div>
-                                        <div class="vehicle-card-stats">
-                                            <div class="vehicle-stat">
-                                                <span class="stat-label">Mileage</span>
-                                                <span class="stat-value">${formatMileage(vehicle.current_mileage)}</span>
-                                            </div>
-                                            <div class="vehicle-stat">
-                                                <span class="stat-label">KMs Driven</span>
-                                                <span class="stat-value">${vehicle.total_kms_driven}</span>
-                                            </div>
-                                            <div class="vehicle-stat">
-                                                <span class="stat-label">Last Service</span>
-                                                <span class="stat-value">${formatDateDisplay(vehicle.last_service_date)}</span>
-                                            </div>
-                                        </div>
-                                        <div class="vehicle-card-actions d-flex flex-wrap gap-2 mt-auto">
-                                            <button class="btn btn-outline-light btn-sm edit-vehicle" data-id="${vehicle.id}">Edit</button>
-                                            <button class="btn btn-outline-light btn-sm details-vehicle" data-id="${vehicle.id}">Details</button>
-                                            <button class="btn btn-outline-danger btn-sm delete-vehicle" data-id="${vehicle.id}">Delete</button>
-                                        </div>
+                            <div class="vehicle-row-item" data-id="${vehicle.id}" tabindex="0" style="animation-delay: ${index * 0.05}s;" role="button" aria-label="Open transactions for ${vehicle.name}">
+                                <div class="vehicle-row-main">
+                                    <div class="vehicle-row-name">${vehicle.name}</div>
+                                    <div class="vehicle-row-meta">
+                                        <span class="vehicle-row-regno">${vehicle.regno.toUpperCase()}</span>
+                                        ${colorDot}${vehicle.color || 'No color'}
                                     </div>
+                                </div>
+                                <div class="vehicle-row-fuel">
+                                    <span class="fuel-badge">${fuelTypeIcon} ${vehicle.fuel_type.toUpperCase()}</span>
+                                </div>
+                                <div class="vehicle-row-stats">
+                                    <div class="vehicle-row-stat">
+                                        <span class="stat-label-small">Avg Mileage</span>
+                                        <span class="stat-value-small">${formatMileage(vehicle.average_mileage)}</span>
+                                    </div>
+                                    <div class="vehicle-row-stat">
+                                        <span class="stat-label-small">KMs</span>
+                                        <span class="stat-value-small">${vehicle.total_kms_driven || '0'}</span>
+                                    </div>
+                                </div>
+                                <div class="vehicle-row-actions">
+                                    <button class="vehicle-row-btn edit" data-id="${vehicle.id}" title="Edit">✏️</button>
+                                    <button class="vehicle-row-btn details" data-id="${vehicle.id}" title="Details">ℹ️</button>
+                                    <button class="vehicle-row-btn delete" data-id="${vehicle.id}" title="Delete">🗑️</button>
                                 </div>
                             </div>
                         `);
@@ -406,7 +408,8 @@ $(document).ready(function() {
     }
 
     // Details button click
-    $(document).on('click', '.details-vehicle', function() {
+    $(document).on('click', '.vehicle-row-btn.details, .details-vehicle', function(e) {
+        e.stopPropagation();
         const id = $(this).data('id');
         $.ajax({
             url: `/api/vehicles/${id}/`,
@@ -421,9 +424,11 @@ $(document).ready(function() {
     });
 
     // Edit button click
-    $(document).on('click', '.edit-vehicle', function() {
+    $(document).on('click', '.vehicle-row-btn.edit, .edit-vehicle', function(e) {
+        e.stopPropagation();
         const id = $(this).data('id');
         $('#vehicleModalLabel').text('Edit Vehicle');
+        $('.modal-subtitle').text('Update vehicle information');
         const cachedVehicle = $('#vehicleDetailsBody').data('vehicle');
         if (cachedVehicle && String(cachedVehicle.id) === String(id)) {
             populateVehicleForm(cachedVehicle);
@@ -442,7 +447,8 @@ $(document).ready(function() {
     });
 
     // Delete button click
-    $(document).on('click', '.delete-vehicle', function() {
+    $(document).on('click', '.vehicle-row-btn.delete, .delete-vehicle', function(e) {
+        e.stopPropagation();
         if (!confirm('Are you sure you want to delete this vehicle?')) return;
         const id = $(this).data('id');
         $.ajax({
@@ -463,16 +469,16 @@ $(document).ready(function() {
         window.location.href = `/txn/${id}/`;
     }
 
-    // Card click opens transactions
-    $(document).on('click', '.vehicle-card', function(e) {
+    // Row click opens transactions
+    $(document).on('click', '.vehicle-row-item', function(e) {
         if ($(e.target).closest('button').length) {
             return;
         }
         navigateToTransactions($(this).data('id'));
     });
 
-    // Keyboard accessibility for card navigation
-    $(document).on('keydown', '.vehicle-card', function(e) {
+    // Keyboard accessibility for row navigation
+    $(document).on('keydown', '.vehicle-row-item', function(e) {
         if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
             navigateToTransactions($(this).data('id'));

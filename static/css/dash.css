@@ -544,6 +544,227 @@ input[type="date"]::-webkit-calendar-picker-indicator {
     }
 }
 
+/* Vehicle Row List Styles (Rectangular) */
+#vehiclesList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.vehicle-row-item {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(148, 163, 184, 0.15);
+    border-radius: 1rem;
+    padding: 1rem 1.25rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s ease;
+    display: grid;
+    grid-template-columns: 2fr auto auto 1fr auto;
+    align-items: center;
+    gap: 1.5rem;
+    animation: rowEnter 0.4s ease-out forwards;
+    cursor: pointer;
+}
+
+.vehicle-row-item:hover {
+    transform: translateX(4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    border-color: rgba(94, 234, 212, 0.3);
+    background: rgba(15, 23, 42, 0.75);
+}
+
+.vehicle-row-item:focus-visible {
+    outline: 2px solid rgba(94, 234, 212, 0.5);
+    outline-offset: 2px;
+}
+
+.vehicle-row-main {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 0;
+}
+
+.vehicle-row-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #f8fafc;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.vehicle-row-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 0.8rem;
+    color: rgba(148, 163, 184, 0.8);
+}
+
+.vehicle-row-regno {
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.05em;
+    color: #5eead4;
+    font-weight: 500;
+}
+
+.vehicle-row-fuel {
+    white-space: nowrap;
+}
+
+.fuel-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: rgba(94, 234, 212, 0.15);
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    color: #5eead4;
+    border: 1px solid rgba(94, 234, 212, 0.25);
+}
+
+.vehicle-row-stats {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.vehicle-row-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    min-width: 60px;
+}
+
+.stat-label-small {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: rgba(148, 163, 184, 0.7);
+}
+
+.stat-value-small {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #f8fafc;
+}
+
+.vehicle-row-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.vehicle-row-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 0.6rem;
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    background: rgba(15, 23, 42, 0.5);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.vehicle-row-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.vehicle-row-btn.edit:hover {
+    background: rgba(56, 189, 248, 0.2);
+    border-color: rgba(56, 189, 248, 0.5);
+}
+
+.vehicle-row-btn.details:hover {
+    background: rgba(148, 163, 184, 0.2);
+    border-color: rgba(148, 163, 184, 0.5);
+}
+
+.vehicle-row-btn.delete:hover {
+    background: rgba(248, 113, 113, 0.2);
+    border-color: rgba(248, 113, 113, 0.5);
+}
+
+@keyframes rowEnter {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+    .vehicle-row-item {
+        grid-template-columns: 2fr auto auto auto;
+        grid-template-rows: auto auto;
+        gap: 0.75rem 1rem;
+    }
+    
+    .vehicle-row-main {
+        grid-column: 1;
+        grid-row: 1 / 3;
+    }
+    
+    .vehicle-row-fuel {
+        grid-column: 2;
+        grid-row: 1;
+    }
+    
+    .vehicle-row-stats {
+        grid-column: 2 / 4;
+        grid-row: 2;
+        justify-content: flex-start;
+    }
+    
+    .vehicle-row-actions {
+        grid-column: 3;
+        grid-row: 1 / 3;
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 768px) {
+    .vehicle-row-item {
+        grid-template-columns: 1fr auto;
+        grid-template-rows: auto auto auto;
+        gap: 0.5rem;
+        padding: 0.875rem 1rem;
+    }
+    
+    .vehicle-row-main {
+        grid-column: 1;
+        grid-row: 1;
+    }
+    
+    .vehicle-row-fuel {
+        grid-column: 2;
+        grid-row: 1;
+    }
+    
+    .vehicle-row-stats {
+        grid-column: 1 / 3;
+        grid-row: 2;
+        justify-content: flex-start;
+        gap: 1rem;
+    }
+    
+    .vehicle-row-actions {
+        grid-column: 1 / 3;
+        grid-row: 3;
+        justify-content: flex-end;
+        flex-direction: row;
+    }
+}
+
 .list-group-item {
     background: rgba(15, 23, 42, 0.55);
     border-color: rgba(148, 163, 184, 0.2);
