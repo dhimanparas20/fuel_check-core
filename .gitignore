@@ -25,7 +25,7 @@ db.sqlite3-journal
 .idea/**/usage.statistics.xml
 .idea/**/dictionaries
 .idea/**/shelf
-
+staticfiles
 # AWS User-specific
 .idea/**/aws.xml
 
