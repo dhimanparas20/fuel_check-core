@@ -168,66 +168,103 @@ body.txn-page {
 
 
 .txn-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
 }
 
 .txn-card-item {
-    background: var(--input-bg); /* Use input-bg for individual card items */
+    background: var(--input-bg);
     border: 1px solid var(--card-border);
-    border-radius: 1.25rem;
-    padding: 1.5rem;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    border-radius: 1rem;
+    padding: 1rem 1.25rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
-    display: flex;
-    flex-direction: column;
-    gap: 0.8rem;
+    display: grid;
+    grid-template-columns: auto 1fr auto auto auto auto;
+    align-items: center;
+    gap: 1rem;
     animation: fadeIn 0.4s ease-out forwards;
+    cursor: pointer;
 }
 
 .txn-card-item:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+    transform: translateX(4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    border-color: rgba(56, 189, 248, 0.3);
 }
 
 .txn-amount {
-    font-size: 1.6rem;
+    font-size: 1.4rem;
     font-weight: 600;
     color: var(--accent);
-    margin-bottom: 0.5rem;
+    white-space: nowrap;
 }
 
-.txn-detail {
+.txn-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 0;
+}
+
+.txn-location {
+    font-size: 0.9rem;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.txn-meta {
+    display: flex;
+    gap: 0.75rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.txn-meta-item {
     display: flex;
     align-items: center;
-    gap: 0.6rem;
-    font-size: 0.95rem;
-    color: var(--text);
+    gap: 0.3rem;
 }
 
-.txn-detail span:first-child { /* Label */
-    font-weight: 500;
+.txn-meta-item svg {
+    width: 14px;
+    height: 14px;
+}
+
+.txn-detail-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.7rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 0.6rem;
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+.txn-detail-badge svg {
+    width: 16px;
+    height: 16px;
     color: var(--text-muted);
 }
 
-.txn-detail svg {
-    width: 18px;
-    height: 18px;
-    color: var(--text-muted);
+.txn-mileage {
+    font-weight: 600;
+    color: var(--success);
 }
 
 .txn-date {
     font-size: 0.8rem;
     color: var(--text-muted);
-    margin-top: 0.8rem;
-    text-align: right;
+    white-space: nowrap;
 }
 
 .txn-actions {
     display: flex;
-    gap: 0.75rem;
-    margin-top: 1rem;
+    gap: 0.5rem;
 }
 
 .txn-action-btn {
@@ -316,6 +353,15 @@ body.txn-page {
     color: rgba(209, 213, 219, 0.65);
 }
 
+.field-label.optional-label::after {
+    content: ' (optional)';
+    font-size: 0.65rem;
+    color: rgba(148, 163, 184, 0.6);
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: normal;
+}
+
 .field-control {
     position: relative;
     display: flex;
@@ -385,6 +431,43 @@ body.txn-page {
 }
 
 /* Responsive adjustments */
+@media (max-width: 992px) {
+    .txn-card-item {
+        grid-template-columns: auto 1fr auto;
+        grid-template-rows: auto auto;
+        gap: 0.5rem 1rem;
+        padding: 0.875rem 1rem;
+    }
+    
+    .txn-amount {
+        grid-column: 1;
+        grid-row: 1;
+        font-size: 1.2rem;
+    }
+    
+    .txn-info {
+        grid-column: 2;
+        grid-row: 1 / 3;
+    }
+    
+    .txn-actions {
+        grid-column: 3;
+        grid-row: 1 / 3;
+        flex-direction: column;
+    }
+    
+    .txn-detail-badge {
+        grid-column: 1;
+        grid-row: 2;
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+    
+    .txn-date {
+        display: none;
+    }
+}
+
 @media (max-width: 768px) {
     .txn-header {
         flex-direction: column;
@@ -406,8 +489,32 @@ body.txn-page {
     .add-txn-btn {
         width: 100%;
     }
-    .txn-grid {
-        grid-template-columns: 1fr;
+    .txn-card-item {
+        grid-template-columns: 1fr auto;
+        grid-template-rows: auto auto auto;
+        gap: 0.5rem;
+    }
+    .txn-amount {
+        grid-column: 1;
+        grid-row: 1;
+    }
+    .txn-info {
+        grid-column: 1 / 3;
+        grid-row: 2;
+    }
+    .txn-actions {
+        grid-column: 2;
+        grid-row: 1;
+        flex-direction: row;
+    }
+    .txn-detail-badge {
+        grid-column: 1;
+        grid-row: 3;
+        justify-self: start;
+    }
+    .txn-action-btn {
+        padding: 0.4rem 0.7rem;
+        font-size: 0.8rem;
     }
 }
 

@@ -6,20 +6,74 @@ $(document).ready(function() {
     }
     const vehicleId = window.location.pathname.split('/').filter(Boolean).pop();
     let search = '', sort = '-created_at', filled = '';
+    let vehicleData = null;
+
+    // Fetch vehicle details for validation
+    function loadVehicleData() {
+        $.ajax({
+            url: `/api/vehicles/${vehicleId}/`,
+            method: 'GET',
+            headers: { 'Authorization': 'Bearer ' + access },
+            success: function(data) {
+                vehicleData = data;
+            },
+            error: function(xhr) {
+                if (xhr.status === 401) {
+                    sessionStorage.clear();
+                    window.location.href = '/login';
+                }
+            }
+        });
+    }
+    loadVehicleData();
 
     // Function to populate the transaction form modal
     function populateTxnForm(txn = {}) {
         $('#txnId').val(txn.id || '');
         $('#amount').val(txn.amount || '');
         $('#fuel_qty').val(txn.fuel_qty || '');
+        $('#kms_driven').val(txn.kms_driven || '');
         $('#tank_fully_filled').val(txn.tank_fully_filled ? 'true' : 'false');
         $('#location').val(txn.location || '');
+        $('#txn_date').val(formatDateForInput(txn.txn_date));
+    }
+
+    // Format date for date input (YYYY-MM-DD)
+    function formatDateForInput(value) {
+        if (!value) return '';
+        if (typeof value === 'string') {
+            // Handle DD-MM-YYYY HH:MM:SS format
+            const customMatch = value.match(/^(\d{2})-(\d{2})-(\d{4})/);
+            if (customMatch) {
+                return `${customMatch[3]}-${customMatch[2]}-${customMatch[1]}`;
+            }
+            // Handle ISO format (YYYY-MM-DD or YYYY-MM-DDTHH:mm:ss)
+            const isoMatch = value.match(/^(\d{4}-\d{2}-\d{2})/);
+            if (isoMatch) {
+                return isoMatch[1];
+            }
+        }
+        const date = new Date(value);
+        if (isNaN(date.getTime())) return '';
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
     }
 
     // Date formatting utility
     function formatDateDisplay(value) {
         if (!value) return '—';
         if (typeof value === 'string') {
+            // Handle DD-MM-YYYY HH:MM:SS format (e.g., "17-02-2026 16:52:41")
+            const customMatch = value.match(/^(\d{2})-(\d{2})-(\d{4})/);
+            if (customMatch) {
+                const day = customMatch[1];
+                const month = customMatch[2];
+                const year = customMatch[3];
+                return `${year}-${month}-${day}`;
+            }
+            // Handle ISO format (e.g., "2026-02-17T16:52:41")
             if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
                 return value;
             }
@@ -80,25 +134,36 @@ $(document).ready(function() {
                     $('#txnList').append('<div class="empty-state">No transactions recorded yet. Click "Add Transaction" to begin!</div>');
                 } else {
                     txns.forEach(function(txn, index) {
+                        // Parse decimal values from strings to numbers
+                        const currentMileage = txn.current_mileage ? parseFloat(txn.current_mileage) : null;
+                        const fuelQty = parseFloat(txn.fuel_qty);
+                        const amount = parseFloat(txn.amount);
+                        
+                        const mileageDisplay = currentMileage 
+                            ? `<span class="txn-mileage">${currentMileage.toFixed(1)} km/L</span>`
+                            : '<span style="color: var(--text-muted);">-</span>';
+                        
                         $('#txnList').append(`
                             <div class="txn-card-item" data-id="${txn.id}" tabindex="0" style="animation-delay: ${index * 0.05}s;">
-                                <div class="txn-amount">₹${txn.amount}</div>
-                                <div class="txn-detail">
-                                    <span>Fuel:</span>
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a3 3 0 0 0-3 3v8a3 3 0 0 0 3 3h2a3 3 0 0 0 3-3V6a3 3 0 0 0-3-3h-2zM4 11V3h3"></path></svg>
-                                    <span>${txn.fuel_qty} L</span>
+                                <div class="txn-amount">₹${amount.toFixed(2)}</div>
+                                <div class="txn-info">
+                                    <div class="txn-location">${txn.location || 'No location'}</div>
+                                    <div class="txn-meta">
+                                        <span class="txn-meta-item">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a3 3 0 0 0-3 3v8a3 3 0 0 0 3 3h2a3 3 0 0 0 3-3V6a3 3 0 0 0-3-3h-2zM4 11V3h3"></path></svg>
+                                            ${fuelQty.toFixed(2)}L
+                                        </span>
+                                        <span class="txn-meta-item">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                                            ${txn.tank_fully_filled ? 'Full' : 'Partial'}
+                                        </span>
+                                    </div>
                                 </div>
-                                <div class="txn-detail">
-                                    <span>Filled:</span>
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-                                    <span>${txn.tank_fully_filled ? 'Yes' : 'No'}</span>
+                                <div class="txn-detail-badge">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg>
+                                    ${mileageDisplay}
                                 </div>
-                                <div class="txn-detail">
-                                    <span>Location:</span>
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
-                                    <span>${txn.location || 'N/A'}</span>
-                                </div>
-                                <div class="txn-date">${formatDateDisplay(txn.created_at)}</div>
+                                <div class="txn-date">${formatDateDisplay(txn.txn_date || txn.created_at)}</div>
                                 <div class="txn-actions">
                                     <button class="txn-action-btn edit" data-id="${txn.id}">Edit</button>
                                     <button class="txn-action-btn delete" data-id="${txn.id}">Delete</button>
@@ -152,16 +217,20 @@ $(document).ready(function() {
             method: 'GET',
             headers: { 'Authorization': 'Bearer ' + access },
             success: function(txn) {
+                // Parse decimal values from strings
+                const amount = parseFloat(txn.amount);
+                const fuelQty = parseFloat(txn.fuel_qty);
+                const kmsDriven = txn.kms_driven ? parseFloat(txn.kms_driven) : null;
+                const currentMileage = txn.current_mileage ? parseFloat(txn.current_mileage) : null;
+                
                 let html = `<ul style='list-style:none; padding-left:0; margin-bottom:0;'>`;
-                html += `<li><strong>Amount:</strong> ₹${txn.amount}</li>`;
-                html += `<li><strong>Fuel Quantity:</strong> ${txn.fuel_qty} L</li>`;
-                html += `<li><strong>Filled:</strong> ${txn.tank_fully_filled ? 'Yes' : 'No'}</li>`;
+                html += `<li><strong>Amount:</strong> ₹${amount.toFixed(2)}</li>`;
+                html += `<li><strong>Fuel Quantity:</strong> ${fuelQty.toFixed(2)} L</li>`;
+                html += `<li><strong>KMs Driven:</strong> ${kmsDriven !== null ? kmsDriven.toFixed(2) : '-'}</li>`;
+                html += `<li><strong>Current Mileage:</strong> ${currentMileage !== null ? currentMileage.toFixed(2) + ' km/L' : 'N/A (Tank not full)'}</li>`;
+                html += `<li><strong>Full Tank:</strong> ${txn.tank_fully_filled ? 'Yes' : 'No'}</li>`;
                 html += `<li><strong>Location:</strong> ${txn.location || '-'}</li>`;
-                html += `<li><strong>Created at:</strong> ${formatDateDisplay(txn.created_at)}</li>`;
-                html += `<li><strong>Updated at:</strong> ${formatDateDisplay(txn.updated_at)}</li>`;
-                if (typeof txn.kms_driven !== 'undefined') html += `<li><strong>KMs Driven:</strong> ${txn.kms_driven}</li>`;
-                if (txn.current_mileage !== null && typeof txn.current_mileage !== 'undefined') html += `<li><strong>Current Mileage:</strong> ${txn.current_mileage}</li>`;
-                html += `<li><strong>Transaction ID:</strong> ${txn.id}</li>`;
+                html += `<li><strong>Transaction Date:</strong> ${formatDateDisplay(txn.txn_date) || formatDateDisplay(txn.created_at)}</li>`;
                 html += `</ul>`;
                 $('#txnDetailsContent').html(html);
                 $('#txnDetailsModal').modal('show');
@@ -197,6 +266,7 @@ $(document).ready(function() {
         const txnId = $('#txnId').val();
         const amount = parseFloat($('#amount').val());
         const fuel_qty = parseFloat($('#fuel_qty').val());
+        const kms_driven = parseFloat($('#kms_driven').val());
         const location = $('#location').val().trim();
 
         if (isNaN(amount) || amount <= 0) {
@@ -207,14 +277,34 @@ $(document).ready(function() {
             alert('Please enter a valid fuel quantity (greater than 0).');
             return;
         }
+        if (isNaN(kms_driven) || kms_driven < 0) {
+            alert('Please enter a valid KMs driven (0 or greater).');
+            return;
+        }
+
+        // Validate fuel quantity against tank capacity
+        if (vehicleData && vehicleData.fuel_tank_capacity) {
+            const tankCapacity = parseFloat(vehicleData.fuel_tank_capacity);
+            if (fuel_qty > tankCapacity) {
+                alert(`Fuel quantity (${fuel_qty}L) cannot exceed tank capacity (${tankCapacity}L).`);
+                return;
+            }
+        }
 
         const data = {
             amount: amount,
             fuel_qty: fuel_qty,
+            kms_driven: kms_driven,
             tank_fully_filled: $('#tank_fully_filled').val() === 'true',
             location: location,
             vehicle: vehicleId
         };
+
+        // Add optional txn_date if provided
+        const txnDate = $('#txn_date').val();
+        if (txnDate && txnDate !== '') {
+            data.txn_date = txnDate;
+        }
 
         const method = txnId ? 'PATCH' : 'POST';
         const url = txnId ? `/api/txns/${txnId}/` : '/api/txns/';

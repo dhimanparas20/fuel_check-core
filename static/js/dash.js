@@ -108,15 +108,17 @@ $(document).ready(function() {
         $('#vehicleId').val(vehicle.id || '');
         $('#regno').val(sanitizeFormValue(vehicle.regno));
         $('#name').val(sanitizeFormValue(vehicle.name));
-        $('#current_mileage').val(sanitizeFormValue(vehicle.current_mileage));
-        $('#total_kms_driven').val(sanitizeFormValue(vehicle.total_kms_driven));
         $('#fuel_type').val(sanitizeFormValue(vehicle.fuel_type));
+        $('#fuel_tank_capacity').val(sanitizeFormValue(vehicle.fuel_tank_capacity));
+        
+        // Optional fields
         $('#model').val(sanitizeFormValue(vehicle.model));
         $('#color').val(sanitizeFormValue(vehicle.color));
         $('#company').val(sanitizeFormValue(vehicle.company));
+        $('#total_kms_driven').val(sanitizeFormValue(vehicle.total_kms_driven));
         $('#last_service_date').val(formatDateForInput(vehicle.last_service_date));
+        $('#current_mileage').val(sanitizeFormValue(vehicle.current_mileage));
         $('#average_mileage').val(sanitizeFormValue(vehicle.average_mileage));
-        $('#fuel_tank_capacity').val(sanitizeFormValue(vehicle.fuel_tank_capacity));
     }
 
     function lightenRgb(rgb, intensity = 0.7) {
@@ -209,12 +211,15 @@ $(document).ready(function() {
         if (!trigger) {
             if (!$('#vehicleId').val()) {
                 $('#vehicleForm')[0].reset();
+                $('#vehicleModalLabel').text('Add Vehicle');
+                $('.modal-subtitle').text('Fill in the details below');
             }
             return;
         }
         const vehicleId = trigger.data('id');
         if (vehicleId) {
             $('#vehicleModalLabel').text('Edit Vehicle');
+            $('.modal-subtitle').text('Update vehicle information');
             $.ajax({
                 url: `/api/vehicles/${vehicleId}/`,
                 method: 'GET',
@@ -225,6 +230,7 @@ $(document).ready(function() {
             });
         } else {
             $('#vehicleModalLabel').text('Add Vehicle');
+            $('.modal-subtitle').text('Fill in the details below');
             $('#vehicleForm')[0].reset();
             populateVehicleForm({});
         }
@@ -234,19 +240,51 @@ $(document).ready(function() {
     $('#vehicleForm').submit(function(e) {
         e.preventDefault();
         const vehicleId = $('#vehicleId').val();
+
+        // Get raw values for debugging
+        const rawCurrentMileage = $('#current_mileage').val();
+        const rawLastServiceDate = $('#last_service_date').val();
+        console.log('Raw current_mileage:', rawCurrentMileage, 'Type:', typeof rawCurrentMileage);
+        console.log('Raw last_service_date:', rawLastServiceDate, 'Type:', typeof rawLastServiceDate);
+
+        // Build data object with only filled values for optional fields
         const data = {
-            regno: $('#regno').val(),
-            name: $('#name').val(),
-            current_mileage: $('#current_mileage').val(),
-            total_kms_driven: $('#total_kms_driven').val(),
+            regno: $('#regno').val().trim(),
+            name: $('#name').val().trim(),
             fuel_type: $('#fuel_type').val(),
-            model: $('#model').val(),
-            color: $('#color').val(),
-            company: $('#company').val(),
-            last_service_date: $('#last_service_date').val(),
-            average_mileage: $('#average_mileage').val(),
-            fuel_tank_capacity: $('#fuel_tank_capacity').val()
+            fuel_tank_capacity: parseFloat($('#fuel_tank_capacity').val()) || 0
         };
+
+        // Add optional fields only if they have valid values (not empty string)
+        const model = $('#model').val().trim();
+        if (model && model !== '') data.model = model;
+
+        const company = $('#company').val().trim();
+        if (company && company !== '') data.company = company;
+
+        const color = $('#color').val().trim();
+        if (color && color !== '') data.color = color;
+
+        const total_kms_driven = $('#total_kms_driven').val();
+        if (total_kms_driven && total_kms_driven !== '' && !isNaN(parseFloat(total_kms_driven))) {
+            data.total_kms_driven = parseFloat(total_kms_driven);
+        }
+
+        const last_service_date = $('#last_service_date').val();
+        if (last_service_date && last_service_date !== '') data.last_service_date = last_service_date;
+
+        const current_mileage = $('#current_mileage').val();
+        if (current_mileage && current_mileage !== '' && !isNaN(parseFloat(current_mileage))) {
+            data.current_mileage = parseFloat(current_mileage);
+        }
+
+        const average_mileage = $('#average_mileage').val();
+        if (average_mileage && average_mileage !== '' && !isNaN(parseFloat(average_mileage))) {
+            data.average_mileage = parseFloat(average_mileage);
+        }
+
+        console.log('Data being sent:', JSON.stringify(data, null, 2));
+
         const method = vehicleId ? 'PATCH' : 'POST';
         const url = vehicleId ? `/api/vehicles/${vehicleId}/` : '/api/vehicles/';
         $.ajax({
@@ -268,23 +306,103 @@ $(document).ready(function() {
     });
 
     function vehicleDetailsHtml(vehicle) {
+        const fuelTypeIcon = {
+            'petrol': '⛽',
+            'diesel': '🛢️',
+            'cng': '🔵'
+        }[vehicle.fuel_type] || '⛽';
+
+        const colorDot = vehicle.color ? `<span class="color-dot" style="background-color: ${vehicle.color.toLowerCase()}; display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 8px; border: 1px solid rgba(255,255,255,0.3);"></span>` : '';
+
         return `
-        <ul class="list-group list-group-flush">
-            <li class="list-group-item"><b>Name:</b> ${vehicle.name}</li>
-            <li class="list-group-item"><b>Registration No:</b> ${vehicle.regno}</li>
-            <li class="list-group-item"><b>Owner:</b> ${vehicle.owner.first_name} ${vehicle.owner.last_name} (${vehicle.owner.email})</li>
-            <li class="list-group-item"><b>Model:</b> ${vehicle.model || '-'} </li>
-            <li class="list-group-item"><b>Color:</b> ${vehicle.color || '-'} </li>
-            <li class="list-group-item"><b>Company:</b> ${vehicle.company || '-'} </li>
-            <li class="list-group-item"><b>Current Mileage:</b> ${formatMileage(vehicle.current_mileage)}</li>
-            <li class="list-group-item"><b>Total KMs Driven:</b> ${vehicle.total_kms_driven}</li>
-            <li class="list-group-item"><b>Fuel Type:</b> ${vehicle.fuel_type}</li>
-            <li class="list-group-item"><b>Last Service Date:</b> ${formatDateDisplay(vehicle.last_service_date)}</li>
-            <li class="list-group-item"><b>Average Mileage:</b> ${formatMileage(vehicle.average_mileage)}</li>
-            <li class="list-group-item"><b>Fuel Tank Capacity:</b> ${vehicle.fuel_tank_capacity ?? '-'}</li>
-            <li class="list-group-item"><b>Created At:</b> ${formatDateDisplay(vehicle.created_at)}</li>
-            <li class="list-group-item"><b>Updated At:</b> ${formatDateDisplay(vehicle.updated_at)}</li>
-        </ul>`;
+        <div class="details-container">
+            <!-- Primary Info Section -->
+            <div class="details-section primary-section">
+                <h6 class="section-title">
+                    <span class="section-icon">🚗</span>
+                    Primary Information
+                </h6>
+                <div class="details-grid">
+                    <div class="detail-item">
+                        <span class="detail-label">Vehicle Name</span>
+                        <span class="detail-value highlight">${vehicle.name}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Registration No.</span>
+                        <span class="detail-value regno">${vehicle.regno.toUpperCase()}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Fuel Type</span>
+                        <span class="detail-value fuel-badge">${fuelTypeIcon} ${vehicle.fuel_type.toUpperCase()}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Fuel Tank Capacity</span>
+                        <span class="detail-value">${vehicle.fuel_tank_capacity || '-'} L</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vehicle Specs Section -->
+            <div class="details-section">
+                <h6 class="section-title">
+                    <span class="section-icon">📋</span>
+                    Vehicle Specifications
+                </h6>
+                <div class="details-grid">
+                    <div class="detail-item">
+                        <span class="detail-label">Company</span>
+                        <span class="detail-value">${vehicle.company || '-'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Model</span>
+                        <span class="detail-value">${vehicle.model || '-'}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Color</span>
+                        <span class="detail-value">${colorDot}${vehicle.color || '-'}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Performance Stats Section -->
+            <div class="details-section stats-section">
+                <h6 class="section-title">
+                    <span class="section-icon">📊</span>
+                    Performance Statistics
+                </h6>
+                <div class="details-grid stats-grid">
+                    <div class="detail-item stat-box">
+                        <span class="stat-icon">🚀</span>
+                        <span class="detail-label">Current Mileage</span>
+                        <span class="detail-value stat-value">${vehicle.current_mileage ? vehicle.current_mileage + ' km/L' : '-'}</span>
+                    </div>
+                    <div class="detail-item stat-box">
+                        <span class="stat-icon">📈</span>
+                        <span class="detail-label">Average Mileage</span>
+                        <span class="detail-value stat-value">${vehicle.average_mileage ? vehicle.average_mileage + ' km/L' : '-'}</span>
+                    </div>
+                    <div class="detail-item stat-box">
+                        <span class="stat-icon">💰</span>
+                        <span class="detail-label">Money Used</span>
+                        <span class="detail-value stat-value money">₹${vehicle.money_used || '0.00'}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Service Info Section -->
+            <div class="details-section">
+                <h6 class="section-title">
+                    <span class="section-icon">🔧</span>
+                    Service Information
+                </h6>
+                <div class="details-grid">
+                    <div class="detail-item">
+                        <span class="detail-label">Last Service Date</span>
+                        <span class="detail-value">${formatDateDisplay(vehicle.last_service_date)}</span>
+                    </div>
+                </div>
+            </div>
+        </div>`;
     }
 
     // Details button click
