@@ -1,0 +1,124 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transactions | Fuel Check</title>
+    <!-- ADD THIS LINE - Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{% static 'css/txn.css' %}" rel="stylesheet">
+</head>
+<body class="txn-page">
+    <main class="txn-container">
+        <div class="txn-card">
+            <header class="txn-header">
+                <a href="/dashboard" class="back-btn" aria-label="Back to Dashboard">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                </a>
+                <h1 class="txn-title">Transactions</h1>
+            </header>
+            <div class="txn-controls">
+                <div class="search-sort-filter">
+                    <div class="control-group">
+                        <span class="control-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></span>
+                        <input type="text" class="control-input" id="searchInput" placeholder="Search by location...">
+                    </div>
+                    <div class="control-group">
+                        <span class="control-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l7.5 7.5v5l-2.5 2.5V21l5-2.5V11.5L21 3"></path></svg></span>
+                        <select class="control-select" id="sortSelect">
+                            <option value="-created_at">Newest First</option>
+                            <option value="created_at">Oldest First</option>
+                            <option value="amount">Amount (Low to High)</option>
+                            <option value="-amount">Amount (High to Low)</option>
+                            <option value="fuel_qty">Fuel Qty (Low to High)</option>
+                            <option value="-fuel_qty">Fuel Qty (High to Low)</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <span class="control-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg></span>
+                        <select class="control-select" id="filterFilled">
+                            <option value="">All</option>
+                            <option value="true">Tank Fully Filled</option>
+                            <option value="false">Not Fully Filled</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="add-txn-btn" id="addTxnBtn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    <span>Add Transaction</span>
+                </button>
+            </div>
+            <div id="txnList" class="txn-grid"></div>
+            <!-- REMOVED: Pagination nav element -->
+        </div>
+    </main>
+
+    <!-- Transaction Modal (Add/Edit) - Hidden by default via Bootstrap CSS -->
+    <div class="modal fade" id="txnModal" tabindex="-1" aria-labelledby="txnModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="txnModalLabel">Add/Edit Transaction</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="txnForm">
+                        <input type="hidden" id="txnId">
+                        <label class="field">
+                            <span class="field-label">Amount</span>
+                            <div class="field-control">
+                                <span class="field-icon">₹</span>
+                                <input type="number" id="amount" placeholder="e.g., 1000" required>
+                            </div>
+                        </label>
+                        <label class="field">
+                            <span class="field-label">Fuel Quantity</span>
+                            <div class="field-control">
+                                <span class="field-icon">L</span>
+                                <input type="number" id="fuel_qty" placeholder="e.g., 20" required>
+                            </div>
+                        </label>
+                        <label class="field">
+                            <span class="field-label">Tank Fully Filled</span>
+                            <div class="field-control">
+                                <select id="tank_fully_filled" required>
+                                    <option value="false">No</option>
+                                    <option value="true">Yes</option>
+                                </select>
+                            </div>
+                        </label>
+                        <label class="field">
+                            <span class="field-label">Location</span>
+                            <div class="field-control">
+                                <span class="field-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg></span>
+                                <input type="text" id="location" placeholder="e.g., City Petrol Pump">
+                            </div>
+                        </label>
+                        <button type="submit" class="primary-btn">Save Transaction</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transaction Details Modal - Hidden by default via Bootstrap CSS -->
+    <div class="modal fade" id="txnDetailsModal" tabindex="-1" aria-labelledby="txnDetailsModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="txnDetailsModalLabel">Transaction Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="txnDetailsContent">
+                    <!-- Filled dynamically with JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'js/txn.js' %}"></script>
+</body>
+</html>

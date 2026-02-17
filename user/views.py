@@ -8,6 +8,3 @@ from .serializers import UserRegisterSerializer
 class UserRegisterView(generics.CreateAPIView):
     queryset = get_user_model().objects.all()
     serializer_class = UserRegisterSerializer
-
-
-# Create your views here.

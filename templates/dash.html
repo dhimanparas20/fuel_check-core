@@ -1,0 +1,112 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Fuel Check</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{% static 'css/dash.css' %}" rel="stylesheet">
+</head>
+<body class="dashboard-body">
+<div class="dashboard-aurora"></div>
+<div class="dashboard-noise"></div>
+<div class="container py-5 dashboard-content">
+    <div class="dashboard-header mb-5">
+        <div>
+            <p class="eyebrow text-uppercase mb-2">Fuel Check</p>
+            <h2 class="display-6 fw-bold mb-2">My Vehicles</h2>
+            <p class="lead text-muted mb-0">Tap into any card to review its transactions, stats, and fueling story.</p>
+        </div>
+        <div class="d-flex flex-wrap gap-3">
+            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#vehicleModal">Add Vehicle</button>
+            <button class="btn btn-outline-light" id="logoutBtn">Logout</button>
+        </div>
+    </div>
+    <div id="vehiclesList" class="row g-4"></div>
+</div>
+<!-- Vehicle Modal -->
+<div class="modal fade" id="vehicleModal" tabindex="-1" aria-labelledby="vehicleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="vehicleModalLabel">Add/Edit Vehicle</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="vehicleForm">
+                    <input type="hidden" id="vehicleId">
+                    <div class="mb-3">
+                        <label for="regno" class="form-label">Registration No.</label>
+                        <input type="text" class="form-control" id="regno" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="current_mileage" class="form-label">Current Mileage</label>
+                        <input type="number" class="form-control" id="current_mileage" placeholder="Optional">
+                    </div>
+                    <div class="mb-3">
+                        <label for="total_kms_driven" class="form-label">Total KMs Driven</label>
+                        <input type="number" class="form-control" id="total_kms_driven" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="fuel_type" class="form-label">Fuel Type</label>
+                        <select class="form-select" id="fuel_type" required>
+                            <option value="">Select</option>
+                            <option value="petrol">Petrol</option>
+                            <option value="diesel">Diesel</option>
+                            <option value="cng">CNG</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="model" class="form-label">Model</label>
+                        <input type="text" class="form-control" id="model">
+                    </div>
+                    <div class="mb-3">
+                        <label for="color" class="form-label">Color</label>
+                        <input type="text" class="form-control" id="color">
+                    </div>
+                    <div class="mb-3">
+                        <label for="company" class="form-label">Company</label>
+                        <input type="text" class="form-control" id="company">
+                    </div>
+                    <div class="mb-3">
+                        <label for="last_service_date" class="form-label">Last Service Date</label>
+                        <input type="date" class="form-control date-input" id="last_service_date" placeholder="YYYY-MM-DD">
+                    </div>
+                    <div class="mb-3">
+                        <label for="average_mileage" class="form-label">Average Mileage</label>
+                        <input type="number" class="form-control" id="average_mileage">
+                    </div>
+                    <div class="mb-3">
+                        <label for="fuel_tank_capacity" class="form-label">Fuel Tank Capacity</label>
+                        <input type="number" class="form-control" id="fuel_tank_capacity" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Save</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Vehicle Details Modal -->
+<div class="modal fade" id="vehicleDetailsModal" tabindex="-1" aria-labelledby="vehicleDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="vehicleDetailsModalLabel">Vehicle Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="vehicleDetailsBody">
+                <!-- Details will be injected by JS -->
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{% static 'js/dash.js' %}"></script>
+</body>
+</html>

@@ -1,0 +1,417 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+:root {
+    --page-bg: #0b1220;
+    --card-bg: #121b2e;
+    --card-border: rgba(255, 255, 255, 0.08);
+    --text: #f1f5f9;
+    --text-muted: rgba(203, 213, 225, 0.75);
+    --accent: #38bdf8;
+    --danger: #f87171;
+    --input-bg: rgba(15, 23, 42, 0.8);
+    --success: #22c55e;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body.txn-page {
+    margin: 0;
+    min-height: 100vh;
+    font-family: 'Inter', sans-serif;
+    background: radial-gradient(circle at top, rgba(56, 189, 248, 0.1) 0%, transparent 55%), var(--page-bg);
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2.5rem 1.5rem;
+}
+
+.txn-container {
+    width: 100%;
+    max-width: 900px; /* Wider for transactions list */
+}
+
+.txn-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 1.75rem;
+    padding: 2.25rem 2rem;
+    box-shadow: 0 30px 60px rgba(8, 15, 30, 0.35);
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+}
+
+.txn-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.back-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text);
+    text-decoration: none;
+    transition: background 0.2s ease;
+}
+
+.back-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.back-btn svg {
+    width: 24px;
+    height: 24px;
+}
+
+.txn-title {
+    margin: 0;
+    font-size: 1.8rem;
+    font-weight: 600;
+}
+
+.txn-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+}
+
+.search-sort-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.control-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: var(--input-bg);
+    border-radius: 1rem;
+    border: 1px solid var(--card-border);
+    padding: 0.4rem 0.8rem;
+}
+
+.control-icon {
+    color: var(--text-muted);
+    margin-right: 0.5rem;
+}
+
+.control-icon svg {
+    width: 18px;
+    height: 18px;
+}
+
+.control-input,
+.control-select {
+    flex: 1;
+    border: none;
+    background: transparent;
+    color: var(--text);
+    font-size: 0.95rem;
+    padding: 0.4rem 0.2rem;
+    outline: none;
+    appearance: none; /* Remove default select arrow */
+}
+
+.control-input::placeholder,
+.control-select option {
+    color: var(--text-muted);
+}
+
+.control-select {
+    padding-right: 2rem; /* Space for custom arrow */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23cbd5e0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.8rem center;
+    background-size: 16px;
+}
+
+
+.add-txn-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: none;
+    border-radius: 1rem;
+    padding: 0.7rem 1.2rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--page-bg);
+    background: linear-gradient(135deg, var(--success), #28a745); /* Green gradient */
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.add-txn-btn svg {
+    width: 20px;
+    height: 20px;
+    stroke: var(--page-bg);
+}
+
+.add-txn-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 16px rgba(34, 197, 94, 0.25);
+}
+
+
+.txn-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.25rem;
+}
+
+.txn-card-item {
+    background: var(--input-bg); /* Use input-bg for individual card items */
+    border: 1px solid var(--card-border);
+    border-radius: 1.25rem;
+    padding: 1.5rem;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    animation: fadeIn 0.4s ease-out forwards;
+}
+
+.txn-card-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+}
+
+.txn-amount {
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+}
+
+.txn-detail {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.95rem;
+    color: var(--text);
+}
+
+.txn-detail span:first-child { /* Label */
+    font-weight: 500;
+    color: var(--text-muted);
+}
+
+.txn-detail svg {
+    width: 18px;
+    height: 18px;
+    color: var(--text-muted);
+}
+
+.txn-date {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 0.8rem;
+    text-align: right;
+}
+
+.txn-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.txn-action-btn {
+    border: 1px solid var(--card-border);
+    border-radius: 0.8rem;
+    padding: 0.6rem 1rem;
+    background: transparent;
+    color: var(--text);
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.txn-action-btn.edit {
+    color: var(--accent);
+    border-color: rgba(56, 189, 248, 0.3);
+}
+
+.txn-action-btn.edit:hover {
+    background: rgba(56, 189, 248, 0.1);
+    border-color: var(--accent);
+}
+
+.txn-action-btn.delete {
+    color: var(--danger);
+    border-color: rgba(248, 113, 113, 0.3);
+}
+
+.txn-action-btn.delete:hover {
+    background: rgba(248, 113, 113, 0.1);
+    border-color: var(--danger);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem 1.5rem;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 1.5rem;
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    line-height: 1.5;
+    margin-top: 1.5rem;
+}
+
+/* Modal styles (simplified from login.css) */
+.modal-content {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 1.5rem;
+    color: var(--text);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+    border-bottom: 1px solid var(--card-border);
+    padding: 1.5rem 2rem;
+}
+
+.modal-title {
+    font-weight: 600;
+    font-size: 1.4rem;
+}
+
+.modal-header .btn-close {
+    filter: invert(1); /* Adjust close button for dark background */
+}
+
+.modal-body {
+    padding: 1.5rem 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+}
+
+.field-label {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: rgba(209, 213, 219, 0.65);
+}
+
+.field-control {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: var(--input-bg);
+    border-radius: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 0.65rem 0.9rem;
+}
+
+.field-control input,
+.field-control select {
+    flex: 1;
+    border: none;
+    background: transparent;
+    color: var(--text);
+    font-size: 1rem;
+    font-weight: 500;
+    outline: none;
+    appearance: none; /* Remove default select arrow */
+}
+
+.field-control select {
+    padding-right: 1.5rem; /* Space for custom arrow */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23cbd5e0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.6rem center;
+    background-size: 16px;
+}
+
+
+.field-control input::placeholder {
+    color: rgba(148, 163, 184, 0.6);
+}
+
+.field-icon {
+    color: rgba(148, 163, 184, 0.8);
+    font-size: 0.95rem;
+    margin-right: 0.5rem;
+}
+
+.primary-btn {
+    margin-top: 1rem;
+    border: none;
+    border-radius: 1rem;
+    padding: 0.85rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--page-bg);
+    background: linear-gradient(135deg, var(--accent), #22d3ee);
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.primary-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.primary-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 20px rgba(56, 189, 248, 0.25);
+}
+
+.d-none {
+    display: none !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .txn-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.8rem;
+    }
+    .txn-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .search-sort-filter {
+        flex-direction: column;
+        gap: 0.8rem;
+        width: 100%;
+    }
+    .control-group {
+        width: 100%;
+    }
+    .add-txn-btn {
+        width: 100%;
+    }
+    .txn-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}

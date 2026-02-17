@@ -64,7 +64,9 @@ class TxnViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         vehicle = serializer.validated_data.get("vehicle")
-        if vehicle.owner != self.request.user:
+        if not vehicle:
+            raise serializers.ValidationError("Vehicle is required.")
+        if not hasattr(vehicle, "owner") or vehicle.owner != self.request.user:
             raise serializers.ValidationError("You can only add transactions for your own vehicles.")
         serializer.save(owner=self.request.user)
 
