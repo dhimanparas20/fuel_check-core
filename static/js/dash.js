@@ -2,7 +2,7 @@ $(document).ready(function() {
     // Check for JWT token in sessionStorage
     const access = sessionStorage.getItem('access');
     if (!access) {
-        window.location.href = '/auth';
+        window.location.href = '/login';
         return;
     }
 
@@ -199,7 +199,7 @@ $(document).ready(function() {
             error: function(xhr) {
                 if (xhr.status === 401) {
                     sessionStorage.clear();
-                    window.location.href = '/auth';
+                    window.location.href = '/login';
                 }
             }
         });
