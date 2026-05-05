@@ -219,3 +219,24 @@ SIMPLE_JWT = {
     "ROTATE_REFRESH_TOKENS": False,
     "BLACKLIST_AFTER_ROTATION": False,
 }
+
+
+# Logging Configuration
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "simple": {"format": "[%(asctime)s] %(levelname)s %(name)s: %(message)s", "datefmt": "%d-%m-%Y %H:%M:%S"},
+        "colored": {"format": "\033[36m[%(asctime)s]\033[0m \033[1m%(levelname)s\033[0m \033[33m%(name)s\033[0m: %(message)s", "datefmt": "%d-%m-%Y %H:%M:%S"},
+    },
+    "handlers": {
+        "console": {"class": "logging.StreamHandler", "formatter": "colored"},
+    },
+    "root": {"handlers": ["console"], "level": "INFO"},
+    "loggers": {
+        "django": {"handlers": ["console"], "level": "INFO", "propagate": False},
+        "django.request": {"handlers": ["console"], "level": "INFO", "propagate": False},
+        "fuel_check": {"handlers": ["console"], "level": "INFO", "propagate": False},
+        "user": {"handlers": ["console"], "level": "INFO", "propagate": False},
+    },
+}

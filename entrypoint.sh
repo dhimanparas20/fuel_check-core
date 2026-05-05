@@ -18,4 +18,4 @@ else:
 "
 
 echo ">>> Starting Gunicorn..."
-exec gunicorn project.wsgi:application --bind 0.0.0.0:8000 --workers 1 --timeout 120 --reload
+exec gunicorn project.wsgi:application --bind 0.0.0.0:8000 --workers 1 --timeout 120 --reload --access-logfile - --error-logfile -

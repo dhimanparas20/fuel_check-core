@@ -290,6 +290,7 @@ body.dashboard-body {
     transform: translateY(-1px);
 }
 .card-action-btn.edit:hover { color: var(--accent); border-color: rgba(56, 189, 248, 0.3); }
+.card-action-btn.analytics:hover { color: var(--warning, #fbbf24); border-color: rgba(251, 191, 36, 0.3); }
 .card-action-btn.delete:hover { color: var(--danger); border-color: rgba(248, 113, 113, 0.3); }
 .card-action-btn.details:hover { color: var(--success); border-color: rgba(34, 197, 94, 0.2); }
 

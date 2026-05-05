@@ -17,7 +17,7 @@
         <div>
             <p class="eyebrow text-uppercase mb-2">Fuel Check</p>
             <h2 class="display-6 fw-bold mb-2">My Vehicles</h2>
-            <p class="lead text-muted mb-0">Tap into any card to review its transactions, stats, and fueling story.</p>
+            <p class="lead mb-0" style="color:rgba(200,215,230,0.85)">Tap into any card to review its transactions, stats, and fueling story.</p>
         </div>
         <div class="d-flex flex-wrap gap-3">
             <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#vehicleModal">Add Vehicle</button>
@@ -77,7 +77,17 @@
                         <h6 class="section-title">
                             <span class="section-icon">+</span>
                             Optional Details
+                            <button type="button" class="btn btn-sm btn-outline-light ms-auto" id="carLookupBtn" style="border-radius:999px;font-size:0.7rem;text-transform:none;letter-spacing:0">🔍 Lookup Car</button>
                         </h6>
+                        <div id="carLookupPanel" style="display:none;margin-bottom:1rem;padding:0.75rem;background:rgba(255,255,255,0.03);border-radius:0.75rem;border:1px solid var(--border)">
+                            <div style="display:flex;gap:0.5rem;margin-bottom:0.5rem">
+                                <input type="text" id="carMakeInput" placeholder="Make (e.g. Toyota)" style="flex:1;background:var(--bg-input);border:1px solid var(--border);color:var(--text);border-radius:0.5rem;padding:0.4rem 0.7rem;font-size:0.8rem">
+                                <input type="text" id="carModelInput" placeholder="Model" style="flex:1;background:var(--bg-input);border:1px solid var(--border);color:var(--text);border-radius:0.5rem;padding:0.4rem 0.7rem;font-size:0.8rem">
+                                <input type="text" id="carYearInput" placeholder="Year" style="width:70px;background:var(--bg-input);border:1px solid var(--border);color:var(--text);border-radius:0.5rem;padding:0.4rem 0.7rem;font-size:0.8rem">
+                                <button type="button" class="btn btn-sm btn-primary" id="carFetchBtn" style="border-radius:999px;padding:0.3rem 0.8rem;font-size:0.75rem">Fetch</button>
+                            </div>
+                            <div id="carLookupStatus" style="font-size:0.75rem;color:var(--text-muted)"></div>
+                        </div>
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label for="model" class="form-label optional-label">Model</label>

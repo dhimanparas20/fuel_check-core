@@ -1,0 +1,299 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics | Fuel Check</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link href="{% static 'css/common.css' %}" rel="stylesheet">
+    <link href="{% static 'css/dash.css' %}" rel="stylesheet">
+    <style>
+        body.analytics-page {
+            min-height: 100vh;
+            background: var(--bg-deep, #060b14);
+            color: var(--text, #e8edf5);
+            font-family: var(--font, 'Inter', sans-serif);
+            padding: 2rem;
+        }
+        .analytics-container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        .analytics-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            animation: fadeInDown 0.5s ease;
+        }
+        .analytics-header .back-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border, rgba(255,255,255,0.06));
+            color: var(--text);
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .analytics-header .back-btn:hover { background: rgba(255,255,255,0.1); }
+        .analytics-header h1 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            margin: 0;
+            background: var(--gradient-1, linear-gradient(135deg, #38bdf8, #6366f1));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .analytics-header .vehicle-name {
+            margin-left: auto;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+            animation: fadeInUp 0.5s ease;
+        }
+        .summary-card {
+            background: var(--bg-card, #0f1a2e);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.25rem;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        .summary-card:hover { transform: translateY(-2px); border-color: var(--border-hover); }
+        .summary-card .sc-icon { font-size: 1.5rem; margin-bottom: 0.4rem; }
+        .summary-card .sc-label {
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+        }
+        .summary-card .sc-value {
+            font-size: 1.3rem;
+            font-weight: 800;
+            margin-top: 0.2rem;
+        }
+        .sc-value.green { color: var(--success, #22c55e); }
+        .sc-value.blue { color: var(--accent, #38bdf8); }
+
+        .chart-section {
+            background: var(--bg-card, #0f1a2e);
+            border: 1px solid var(--border);
+            border-radius: 1.25rem;
+            padding: 1.5rem;
+            margin-bottom: 1.25rem;
+            animation: fadeInUp 0.5s ease;
+        }
+        .chart-section h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin: 0 0 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .chart-wrapper {
+            position: relative;
+            width: 100%;
+            height: 320px;
+        }
+        .chart-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+        }
+        .chart-row .chart-wrapper { height: 260px; }
+
+        @media (max-width: 768px) {
+            body.analytics-page { padding: 1rem; }
+            .chart-row { grid-template-columns: 1fr; }
+            .summary-cards { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        /* Service Records Section */
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+        .section-header h3 { margin: 0; }
+        .add-btn {
+            background: var(--gradient-2, linear-gradient(135deg, #22c55e, #10b981));
+            border: none;
+            color: #000;
+            font-weight: 600;
+            border-radius: 999px;
+            padding: 0.5rem 1.25rem;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .add-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(34,197,94,0.25); }
+
+        .service-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .service-item {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 0.85rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .service-item:hover { border-color: var(--border-hover); background: rgba(255,255,255,0.03); }
+        .service-type-badge {
+            padding: 0.2rem 0.6rem;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            white-space: nowrap;
+            background: rgba(56,189,248,0.12);
+            color: var(--accent);
+            border: 1px solid rgba(56,189,248,0.2);
+        }
+        .service-item .si-meta {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            display: flex;
+            gap: 1rem;
+            flex: 1;
+        }
+        .service-item .si-cost {
+            font-weight: 700;
+            color: var(--text);
+            white-space: nowrap;
+        }
+        .service-item .si-delete {
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--danger, #f87171);
+            border-radius: 0.5rem;
+            padding: 0.25rem 0.6rem;
+            cursor: pointer;
+            font-size: 0.75rem;
+        }
+
+        /* Service form embedded */
+        .service-form-inline {
+            background: rgba(255,255,255,0.02);
+            border: 1px dashed var(--border);
+            border-radius: 1rem;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            display: none;
+        }
+        .service-form-inline.active { display: block; animation: slideDown 0.3s ease; }
+        .service-form-inline .row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; }
+        .service-form-inline input, .service-form-inline select {
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            color: var(--text);
+            border-radius: 0.65rem;
+            padding: 0.6rem 0.8rem;
+            font-size: 0.85rem;
+            width: 100%;
+        }
+        .service-form-inline input:focus, .service-form-inline select:focus {
+            border-color: var(--accent);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(56,189,248,0.08);
+        }
+        .service-form-inline select { background: var(--bg-input); }
+        .cf-row { display: flex; gap: 0.5rem; margin-top: 0.75rem; justify-content: flex-end; }
+        @media (max-width: 768px) {
+            .service-form-inline .row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body class="analytics-page">
+<div class="analytics-container">
+    <div class="analytics-header">
+        <a href="/dashboard" class="back-btn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </a>
+        <h1>Analytics</h1>
+        <span class="vehicle-name" id="vehicleName"></span>
+    </div>
+
+    <div class="summary-cards" id="summaryCards"></div>
+
+    <div class="chart-section">
+        <h3>📈 Mileage Trend</h3>
+        <div class="chart-wrapper"><canvas id="mileageChart"></canvas></div>
+    </div>
+
+    <div class="chart-row">
+        <div class="chart-section">
+            <h3>💰 Spending Over Time</h3>
+            <div class="chart-wrapper"><canvas id="spendingChart"></canvas></div>
+        </div>
+        <div class="chart-section">
+            <h3>⛽ Fuel Price / Litre</h3>
+            <div class="chart-wrapper"><canvas id="priceChart"></canvas></div>
+        </div>
+    </div>
+
+    <!-- Service Records -->
+    <div class="chart-section">
+        <div class="section-header">
+            <h3>🔧 Service History</h3>
+            <button class="add-btn" id="addServiceBtn">+ Add Service</button>
+        </div>
+        <div class="service-form-inline" id="serviceForm">
+            <div class="row">
+                <input type="date" id="sr_date" placeholder="Service Date">
+                <select id="sr_type" style="appearance:auto">
+                    <option value="regular_service">Regular Service</option>
+                    <option value="oil_change">Oil Change</option>
+                    <option value="brake_service">Brake Service</option>
+                    <option value="tire_change">Tire Change</option>
+                    <option value="battery">Battery</option>
+                    <option value="insurance">Insurance</option>
+                    <option value="puc">PUC Check</option>
+                    <option value="road_tax">Road Tax</option>
+                    <option value="other">Other</option>
+                </select>
+                <input type="number" step="0.01" id="sr_cost" placeholder="Cost (₹)">
+            </div>
+            <div style="margin-top:0.75rem">
+                <input type="text" id="sr_garage" placeholder="Garage name (optional)" style="width:100%">
+            </div>
+            <div style="margin-top:0.5rem">
+                <input type="number" step="0.1" id="sr_odo" placeholder="Odometer reading (optional)" style="width:100%">
+            </div>
+            <div class="cf-row">
+                <button class="btn btn-sm btn-outline-light" id="cancelServiceBtn" style="border-radius:999px">Cancel</button>
+                <button class="btn btn-sm btn-success" id="saveServiceBtn" style="border-radius:999px">Save</button>
+            </div>
+        </div>
+        <div class="service-list" id="serviceList"></div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{% static 'js/toast.js' %}"></script>
+<script src="{% static 'js/analytics.js' %}"></script>
+</body>
+</html>

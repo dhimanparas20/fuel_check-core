@@ -59,7 +59,9 @@ def status_view(request):
 
 urlpatterns = [
     path("health/", health_check, name="health"),
+    path("ping/", health_check, name="ping"),
     path("status/", status_view, name="status"),
+    path("favicon.ico", lambda r: HttpResponse(status=204)),
     path("admin/", admin.site.urls),
     path("user/", include("user.urls")),
     path("api/", include("fuel_check.urls")),
@@ -71,6 +73,11 @@ urlpatterns = [
         "txn/<int:vehicle_id>/",
         TemplateView.as_view(template_name="txn.html"),
         name="txn",
+    ),
+    path(
+        "analytics/<int:vehicle_id>/",
+        TemplateView.as_view(template_name="analytics.html"),
+        name="analytics",
     ),
     path("", RedirectView.as_view(url="/dashboard/", permanent=False), name="index"),
 ]

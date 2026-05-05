@@ -138,6 +138,7 @@ $(document).ready(function() {
                                 </div>
                                 <div class="vehicle-card-actions">
                                     <button class="card-action-btn edit" data-id="${vehicle.id}">✏️ Edit</button>
+                                    <button class="card-action-btn analytics" data-id="${vehicle.id}">📊 Analytics</button>
                                     <button class="card-action-btn details" data-id="${vehicle.id}">ℹ️ Details</button>
                                     <button class="card-action-btn delete" data-id="${vehicle.id}">🗑 Delete</button>
                                 </div>
@@ -312,6 +313,13 @@ $(document).ready(function() {
         });
     });
 
+    // Analytics navigation
+    $(document).on('click', '.card-action-btn.analytics', function(e) {
+        e.stopPropagation();
+        const id = $(this).data('id');
+        if (id) window.location.href = `/analytics/${id}/`;
+    });
+
     // Delete with confirmation modal
     $(document).on('click', '.card-action-btn.delete', async function(e) {
         e.stopPropagation();
@@ -345,6 +353,49 @@ $(document).ready(function() {
 
     $(document).on('keydown', '.vehicle-card-item', function(e) {
         if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigateToTransactions($(this).data('id')); }
+    });
+
+    // Car Lookup
+    $('#carLookupBtn').click(function() { $('#carLookupPanel').slideToggle(200); });
+
+    $('#carFetchBtn').click(function() {
+        const make = $('#carMakeInput').val().trim();
+        const model = $('#carModelInput').val().trim();
+        if (!make || !model) {
+            $('#carLookupStatus').text('Please enter make and model.');
+            return;
+        }
+        $('#carLookupStatus').html('<span class="spinner"></span> Looking up...');
+
+        $.ajax({
+            url: `/api/car-details/?make=${encodeURIComponent(make)}&model=${encodeURIComponent(model)}&year=${$('#carYearInput').val()}`,
+            headers: { 'Authorization': 'Bearer ' + access },
+            success: function(data) {
+                if (data.fuel_type) {
+                    const ft = data.fuel_type.toLowerCase();
+                    if (ft.includes('diesel')) $('#fuel_type').val('diesel');
+                    else if (ft.includes('cng')) $('#fuel_type').val('cng');
+                    else $('#fuel_type').val('petrol');
+                }
+                if (data.fuel_cap_l) {
+                    const cap = parseFloat(data.fuel_cap_l);
+                    if (cap > 0) $('#fuel_tank_capacity').val(cap);
+                }
+                if (data.make) $('#company').val(data.make);
+                if (data.model) $('#model').val(data.model);
+                if (data.make && data.model) {
+                    $('#carLookupStatus').html('✓ Autofilled: ' + data.make + ' ' + data.model +
+                        (data.engine_size ? ' · ' + data.engine_size + 'cc' : '') +
+                        (data.horsepower ? ' · ' + data.horsepower + 'hp' : '') +
+                        (data.fuel_cap_l ? ' · ' + data.fuel_cap_l + 'L tank' : ''));
+                } else {
+                    $('#carLookupStatus').text('No details found. Try different make/model.');
+                }
+            },
+            error: function() {
+                $('#carLookupStatus').text('Lookup failed. CarQuery API may be unavailable.');
+            }
+        });
     });
 
     $('#logoutBtn').click(function() {
