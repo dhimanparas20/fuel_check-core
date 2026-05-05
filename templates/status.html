@@ -18,194 +18,179 @@
             justify-content: center;
             padding: 2rem;
         }
-        .status-container {
-            width: 100%;
-            max-width: 660px;
-            animation: fadeInUp 0.5s ease;
-        }
+        .status-container { width: 100%; max-width: 800px; }
         .status-card {
             background: var(--bg-card, #0f1a2e);
             border: 1px solid var(--border, rgba(255,255,255,0.06));
             border-radius: 1.5rem;
-            padding: 2.25rem 2rem;
+            padding: 2rem;
             box-shadow: 0 25px 50px rgba(0,0,0,0.4);
+            animation: fadeInUp 0.5s ease;
         }
         .status-header {
             display: flex;
             align-items: center;
             gap: 1rem;
-            margin-bottom: 2rem;
-            padding-bottom: 1.5rem;
-            border-bottom: 1px solid var(--border, rgba(255,255,255,0.06));
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.25rem;
+            border-bottom: 1px solid var(--border);
         }
         .status-icon {
-            width: 48px;
-            height: 48px;
+            width: 48px; height: 48px;
             border-radius: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: flex; align-items: center; justify-content: center;
             font-size: 1.5rem;
         }
-        .status-icon.sqlite {
-            background: rgba(34, 197, 94, 0.15);
-            color: #22c55e;
-        }
-        .status-icon.pg {
-            background: rgba(56, 189, 248, 0.15);
-            color: #38bdf8;
-        }
-        .status-title {
-            font-size: 1.4rem;
-            font-weight: 800;
-            letter-spacing: -0.02em;
-        }
-        .status-subtitle {
-            font-size: 0.85rem;
-            color: var(--text-muted, #94a3b8);
-        }
+        .status-icon.local { background: rgba(34,197,94,0.15); color: #22c55e; }
+        .status-icon.remote { background: rgba(56,189,248,0.15); color: #38bdf8; }
+        .status-title { font-size: 1.3rem; font-weight: 800; letter-spacing: -0.02em; }
+        .status-subtitle { font-size: 0.82rem; color: var(--text-muted); }
         .badge-connected {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.35rem;
-            padding: 0.25rem 0.75rem;
-            border-radius: 999px;
-            font-size: 0.75rem;
+            display: inline-flex; align-items: center; gap: 0.35rem;
+            padding: 0.25rem 0.75rem; border-radius: 999px;
+            font-size: 0.72rem; font-weight: 700;
+        }
+        .badge-connected.ok { background: rgba(34,197,94,0.12); color: #22c55e; border: 1px solid rgba(34,197,94,0.25); }
+        .badge-connected.err { background: rgba(248,113,113,0.12); color: #f87171; border: 1px solid rgba(248,113,113,0.25); }
+        .pulse-dot { width: 8px; height: 8px; border-radius: 50%; }
+        .pulse-dot.green { background: #22c55e; animation: pulse-ring 2s infinite; }
+        .pulse-dot.red { background: #f87171; }
+
+        .section-label {
+            font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.12em;
+            color: var(--text-muted); margin: 1.25rem 0 0.75rem;
             font-weight: 600;
         }
-        .badge-connected.ok {
-            background: rgba(34, 197, 94, 0.12);
-            color: #22c55e;
-            border: 1px solid rgba(34, 197, 94, 0.25);
-        }
-        .badge-connected.err {
-            background: rgba(248, 113, 113, 0.12);
-            color: #f87171;
-            border: 1px solid rgba(248, 113, 113, 0.25);
-        }
-        .pulse-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            animation: pulse-ring 2s infinite;
-        }
-        .pulse-dot.green { background: #22c55e; }
-        .pulse-dot.red { background: #f87171; }
+        .section-label:first-of-type { margin-top: 0; }
 
         .info-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 0.75rem;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 0.6rem;
         }
         .info-item {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid var(--border, rgba(255,255,255,0.06));
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border);
             border-radius: 0.75rem;
-            padding: 1rem;
+            padding: 0.85rem;
             transition: all 0.2s ease;
         }
-        .info-item:hover {
-            background: rgba(255, 255, 255, 0.04);
-            border-color: var(--border-hover, rgba(255,255,255,0.12));
-        }
+        .info-item:hover { background: rgba(255,255,255,0.04); border-color: var(--border-hover); }
         .info-label {
-            font-size: 0.68rem;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            color: var(--text-muted, #94a3b8);
-            margin-bottom: 0.35rem;
+            font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.1em;
+            color: var(--text-muted); margin-bottom: 0.3rem;
         }
-        .info-value {
-            font-size: 1.05rem;
-            font-weight: 700;
-            color: var(--text, #e8edf5);
-            word-break: break-all;
-        }
-        .info-value.accent {
-            background: linear-gradient(135deg, #38bdf8, #22d3ee);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
+        .info-value { font-size: 0.95rem; font-weight: 700; color: var(--text); }
         .info-value.green { color: #22c55e; }
+        .info-value.blue { color: var(--accent, #38bdf8); }
+        .info-value.yellow { color: var(--warning, #fbbf24); }
         .info-value.mono {
             font-family: 'Courier New', monospace;
-            font-size: 0.85rem;
-            font-weight: 500;
-            opacity: 0.75;
+            font-size: 0.78rem; font-weight: 500; opacity: 0.8;
+            word-break: break-all;
         }
 
-        .db-highlight {
+        .action-buttons {
+            display: flex;
+            gap: 0.75rem;
             margin-top: 1.5rem;
-            padding-top: 1.5rem;
-            border-top: 1px solid var(--border, rgba(255,255,255,0.06));
+            padding-top: 1.25rem;
+            border-top: 1px solid var(--border);
+            flex-wrap: wrap;
         }
-        .db-type-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 1rem;
-            border-radius: 0.75rem;
+        .btn-action {
+            padding: 0.7rem 1.5rem;
+            border-radius: 999px;
             font-size: 0.85rem;
             font-weight: 700;
-            margin-bottom: 1.25rem;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-        }
-        .db-type-badge.sqlite {
-            background: rgba(34, 197, 94, 0.1);
-            border: 1px solid rgba(34, 197, 94, 0.25);
-            color: #22c55e;
-        }
-        .db-type-badge.pg {
-            background: rgba(56, 189, 248, 0.1);
-            border: 1px solid rgba(56, 189, 248, 0.25);
-            color: #38bdf8;
-        }
-
-        .back-link {
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
             display: inline-flex;
             align-items: center;
             gap: 0.4rem;
-            color: var(--text-muted, #94a3b8);
-            text-decoration: none;
-            font-size: 0.85rem;
-            margin-top: 1.5rem;
-            transition: color 0.2s;
         }
-        .back-link:hover { color: var(--text, #e8edf5); }
+        .btn-action:hover:not(:disabled) { transform: translateY(-1px); }
+        .btn-action:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-migrate { background: linear-gradient(135deg, #38bdf8, #6366f1); color: #fff; box-shadow: 0 4px 15px rgba(56,189,248,0.2); }
+        .btn-collect { background: linear-gradient(135deg, #22c55e, #10b981); color: #000; box-shadow: 0 4px 15px rgba(34,197,94,0.2); }
+
+        .action-output {
+            margin-top: 1rem;
+            padding: 0.75rem 1rem;
+            border-radius: 0.75rem;
+            font-size: 0.8rem;
+            font-family: 'Courier New', monospace;
+            display: none;
+            max-height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .action-output.success { display: block; background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.2); color: #22c55e; }
+        .action-output.error { display: block; background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.2); color: #f87171; }
+
+        .back-link {
+            display: inline-flex; align-items: center; gap: 0.35rem;
+            color: var(--text-muted); text-decoration: none;
+            font-size: 0.82rem; margin-top: 1rem; transition: color 0.2s;
+        }
+        .back-link:hover { color: var(--text); }
     </style>
 </head>
 <body>
 <div class="status-container">
     <div class="status-card">
         <div class="status-header">
-            <div class="status-icon {% if is_local %}sqlite{% else %}pg{% endif %}">
-                {% if is_local %}📁{% else %}☁️{% endif %}
+            <div class="status-icon {{ is_local|yesno:'local,remote' }}">
+                {{ is_local|yesno:'📁,☁️' }}
             </div>
             <div style="flex:1">
-                <div class="status-title">System Status</div>
+                <div class="status-title">System Admin</div>
                 <div class="status-subtitle">Fuel Check Core</div>
             </div>
-            <span class="badge-connected {% if connected %}ok{% else %}err{% endif %}">
-                <span class="pulse-dot {% if connected %}green{% else %}red{% endif %}"></span>
-                {{ connected|yesno:"Connected,Disconnected" }}
+            <span class="badge-connected {{ connected|yesno:'ok,err' }}">
+                <span class="pulse-dot {{ connected|yesno:'green,red' }}"></span>
+                {{ connected|yesno:'Online,Offline' }}
             </span>
         </div>
 
+        <div class="section-label">📊 Analytics</div>
         <div class="info-grid">
             <div class="info-item">
-                <div class="info-label">Database Engine</div>
-                <div class="info-value accent">{{ vendor|upper }}</div>
+                <div class="info-label">Total Users</div>
+                <div class="info-value blue">{{ total_users }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Total Vehicles</div>
+                <div class="info-value">{{ total_vehicles }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Total Transactions</div>
+                <div class="info-value blue">{{ total_txns }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Service Records</div>
+                <div class="info-value">{{ total_services }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Total Money Tracked</div>
+                <div class="info-value green">₹{{ total_spent|floatformat:0 }}</div>
+            </div>
+        </div>
+
+        <div class="section-label">🗄️ Database</div>
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">Engine</div>
+                <div class="info-value blue">{{ vendor|upper }}</div>
             </div>
             <div class="info-item">
                 <div class="info-label">Type</div>
-                <div class="info-value green">
-                    {% if is_local %}💻 Local File{% else %}🌐 Remote Server{% endif %}
-                </div>
+                <div class="info-value green">{{ is_local|yesno:'💻 Local File,🌐 Remote Server' }}</div>
             </div>
             <div class="info-item">
-                <div class="info-label">Database Name</div>
+                <div class="info-label">Database</div>
                 <div class="info-value mono">{{ name }}</div>
             </div>
             <div class="info-item">
@@ -220,33 +205,87 @@
                 <div class="info-label">User</div>
                 <div class="info-value mono">{{ user }}</div>
             </div>
+            <div class="info-item">
+                <div class="info-label">Size</div>
+                <div class="info-value">{{ db_size }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Pending Migrations</div>
+                <div class="info-value {% if pending_migrations == 0 %}green{% else %}yellow{% endif %}">
+                    {{ pending_migrations }}
+                </div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Static Files</div>
+                <div class="info-value {{ static_ok|yesno:'green,yellow' }}">
+                    {{ static_ok|yesno:'✓ Collected,✗ Missing' }}
+                </div>
+            </div>
         </div>
 
-        <div class="db-highlight">
-            <div class="db-type-badge {% if is_local %}sqlite{% else %}pg{% endif %}">
-                {{ vendor|upper }} {% if is_local %}(Embedded){% else %}(Client-Server){% endif %}
+        <div class="section-label">🖥️ System</div>
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">Django</div>
+                <div class="info-value">{{ django_version }}</div>
             </div>
-            <div class="info-grid">
-                <div class="info-item">
-                    <div class="info-label">Django Version</div>
-                    <div class="info-value">{{ django_version }}</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Python Version</div>
-                    <div class="info-value">{{ python_version }}</div>
-                </div>
-                <div class="info-item" style="grid-column: 1 / -1;">
-                    <div class="info-label">Platform</div>
-                    <div class="info-value mono">{{ platform }}</div>
-                </div>
+            <div class="info-item">
+                <div class="info-label">Python</div>
+                <div class="info-value">{{ python_version }}</div>
+            </div>
+            <div class="info-item" style="grid-column: span 2;">
+                <div class="info-label">Platform</div>
+                <div class="info-value mono">{{ platform }}</div>
             </div>
         </div>
+
+        <div class="action-buttons">
+            <button class="btn-action btn-migrate" id="btnMigrate" onclick="runAction('migrate')">
+                🔄 Run Migrations
+            </button>
+            <button class="btn-action btn-collect" id="btnCollect" onclick="runAction('collectstatic')">
+                📦 Collect Static
+            </button>
+        </div>
+        <div class="action-output" id="actionOutput"></div>
 
         <a href="/dashboard" class="back-link">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
             Back to Dashboard
         </a>
     </div>
 </div>
+
+<script>
+function runAction(type) {
+    var btn = document.getElementById(type === 'migrate' ? 'btnMigrate' : 'btnCollect');
+    var out = document.getElementById('actionOutput');
+    var label = type === 'migrate' ? 'Run Migrations' : 'Collect Static';
+    var url = '/status/' + (type === 'migrate' ? 'migrate/' : 'collectstatic/');
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Running...';
+    out.className = 'action-output';
+    out.style.display = 'none';
+
+    fetch(url, { method: 'POST', headers: { 'X-CSRFToken': '{{ csrf_token }}' } })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            out.className = 'action-output ' + (data.ok ? 'success' : 'error');
+            out.textContent = (data.ok ? '✓ ' : '✕ ') + data.message;
+            if (data.ok) {
+                setTimeout(function() { location.reload(); }, 1500);
+            }
+        })
+        .catch(function(err) {
+            out.className = 'action-output error';
+            out.textContent = '✕ Request failed: ' + err.message;
+        })
+        .then(function() {
+            btn.disabled = false;
+            btn.innerHTML = (type === 'migrate' ? '🔄 ' : '📦 ') + label;
+        });
+}
+</script>
 </body>
 </html>
