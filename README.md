@@ -1,289 +1,235 @@
 # Fuel Check Core
 
-A Django REST API application for tracking vehicle fuel consumption, mileage, and maintenance records. Built with Django
-6.x, Django REST Framework, and Supabase PostgreSQL.
+Track every drop. Know every kilometer.
 
-## Overview
+**Fuel Check Core** is a web application that helps you manage your vehicles and track fuel expenses. Log every fuel fill, calculate mileage automatically, and understand exactly where your fuel money goes.
 
-Fuel Check Core helps users manage their vehicles and track fuel expenses. Users can:
+---
 
-- Add and manage multiple vehicles
-- Record fuel filling transactions
-- Track mileage, fuel consumption, and average mileage
-- Monitor total money spent on fuel
-- View service history and vehicle details
+## What You Can Do
 
-## Tech Stack
+- **Manage Vehicles** — Add your cars, bikes, or any vehicle. Track registration, model, color, fuel type.
+- **Log Fuel Fills** — Record every fuel transaction: amount paid, liters filled, kilometers driven.
+- **Auto Mileage** — The app calculates km/L automatically whenever you fill a full tank.
+- **Track Spending** — See total money spent on fuel per vehicle at a glance.
+- **Review Stats** — Current mileage, average mileage, total kilometers — all calculated in real-time.
 
-- **Backend**: Django 6.x, Django REST Framework
-- **Database**: Supabase PostgreSQL
-- **Static Files**: AWS S3 (optional) or local storage
-- **Authentication**: JWT (djangorestframework-simplejwt)
-- **Package Manager**: uv
+---
 
-## Features
+## Quick Start (Docker — Easiest)
 
-- User authentication with JWT tokens
-- Vehicle management (add, edit, delete vehicles)
-- Fuel transaction logging (amount, quantity, kilometers driven)
-- Automatic mileage calculation
-- Average fuel efficiency computation
-- Admin interface for data management
-- RESTful API with filtering and searching
-- CORS support for frontend integration
-- Static file hosting via AWS S3
-
-## Project Structure
-
-```
-fuel_check-core/
-├── fuel_check/          # Main app - vehicle & transaction models
-├── user/                # User authentication app
-├── project/             # Django project settings
-├── static/              # Static files (CSS, JS, images)
-├── manage.py            # Django management script
-├── pyproject.toml       # Project dependencies (uv)
-├── .env                 # Environment variables (local)
-├── .env.sample          # Environment template
-├── README.md            # Project documentation
-└── Agents.md            # AI agent documentation
-```
-
-## Prerequisites
-
-- Python 3.13+
-- uv (package manager)
-- Supabase account (database)
-- AWS account (optional, for S3 static hosting)
-
-## Setup Instructions
-
-### 1. Clone and Install Dependencies
+No Python setup needed. Just Docker.
 
 ```bash
-git clone <repository-url>
+git clone <repo-url>
 cd fuel_check-core
-uv sync
-```
-
-### 2. Configure Environment Variables
-
-Copy `.env.sample` to `.env` and fill in your values:
-
-```bash
 cp .env.sample .env
+docker compose up --build
 ```
 
-Edit `.env` with your configuration:
+Then open **http://localhost:8000/login** in your browser.
 
+- **Default superuser**: `admin` / `admin@123` (auto-created on first run)
+- **Database**: SQLite (stored locally in `data/db.sqlite3` — persists across restarts)
+
+### Switching to PostgreSQL
+
+Edit `.env`:
 ```env
-# Django Settings
-SECRET_KEY=your-secret-key-here
-DEBUG=True
-ALLOWED_HOSTS=localhost,127.0.0.1,*,.vercel.app
-
-# Database - Supabase PostgreSQL
-DB_NAME=postgres
-DB_USER=postgres.your-project-ref
-DB_PASSWORD=your-database-password
-DB_HOST=aws-1-ap-south-1.pooler.supabase.com
-DB_PORT=6543
-
-# AWS S3 (Optional)
-USE_AWS_S3=False
-AWS_ACCESS_KEY_ID=your-aws-access-key-id
-AWS_SECRET_ACCESS_KEY=your-aws-secret-access-key
-AWS_STORAGE_BUCKET_NAME=your-bucket-name
-AWS_S3_REGION_NAME=us-east-1
+USE_REMOTE_DB=True
+DB_NAME=your-db-name
+DB_USER=your-user
+DB_PASSWORD=your-password
+DB_HOST=your-host.com
+DB_PORT=5432
 ```
+Then: `docker compose up --build`
 
-### 3. Database Setup (Supabase)
+---
 
-1. Create a new project at [supabase.com](https://supabase.com)
-2. Go to **Settings > Database**
-3. Find your connection details:
-    - **Host**: `aws-1-ap-south-1.pooler.supabase.com` (or your region)
-    - **Port**: `6543`
-    - **Database**: `postgres`
-    - **User**: `postgres.your-project-ref`
-    - **Password**: Your database password
+## Quick Start (Local — Without Docker)
 
-4. Update your `.env` file with these values
+### Prerequisites
+- **Python 3.13+**
+- **uv** — [install guide](https://docs.astral.sh/uv/getting-started/installation/)
 
-### 4. Run Migrations
+### Steps
 
 ```bash
+# 1. Clone and navigate
+git clone <repo-url>
+cd fuel_check-core
+
+# 2. Setup environment
+cp .env.sample .env
+
+# 3. Install dependencies
+uv sync
+
+# 4. Run migrations
 uv run manage.py migrate
-```
 
-### 5. Create Superuser
+# 5. Create a superuser (optional)
+uv run manage.py createsuperuser
 
-```bash
-uv run manage.py createsuperuser --username admin --email admin@example.com
-```
-
-### 6. Collect Static Files
-
-```bash
-# Local storage
+# 6. Collect static files
 uv run manage.py collectstatic
 
-# Or with S3 (if USE_AWS_S3=True)
-uv run manage.py collectstatic --clear  --noinput
-```
-
-### 7. Run Development Server
-
-```bash
+# 7. Start the server
 uv run manage.py runserver 0.0.0.0:8000
 ```
 
-The API will be available at `http://localhost:8000/`
+Open **http://localhost:8000/dashboard**
 
-## AWS S3 Static Files Setup
+---
 
-### Why Use S3?
+## Using the App
 
-- Serves static files from CDN (faster loading)
-- Reduces server load
-- Production-ready static file hosting
+### 1. Create an Account
+Go to `/login`, switch to **Create Account**, fill in your details, and sign up.
 
-### Configuration
+### 2. Add a Vehicle
+From the Dashboard, click **Add Vehicle**. Fill in:
+- **Registration No.** — unique vehicle plate number
+- **Vehicle Name** — what you call it (e.g., "My Swift")
+- **Fuel Type** — petrol, diesel, or CNG
+- **Tank Capacity** — in liters
 
-1. **Create S3 Bucket**:
-    - Go to AWS S3 Console
-    - Create new bucket (e.g., `my-fuel-check-static`)
-    - Enable public access (or configure CloudFront)
+### 3. Add Fuel Transactions
+Click on a vehicle card to open its transactions page. Click **Add Transaction** and enter:
+- **Amount (₹)** — how much you paid
+- **Fuel Qty (L)** — how many liters
+- **KMs Driven** — distance since last fill
+- **Full Tank** — toggle Yes/No (mileage is auto-calculated when Yes)
 
-2. **Update Bucket Policy** (for public access):
+### 4. Review Stats
+Each vehicle card shows mileage, total kilometers, and money spent. Click **Details** for a full breakdown.
 
-```json
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "PublicReadGetObject",
-      "Effect": "Allow",
-      "Principal": "*",
-      "Action": "s3:GetObject",
-      "Resource": "arn:aws:s3:::your-bucket-name/*"
-    }
-  ]
-}
-```
+---
 
-3. **Configure Environment Variables**:
+## Project Pages
 
-```env
-USE_AWS_S3=True
-AWS_ACCESS_KEY_ID=your-access-key
-AWS_SECRET_ACCESS_KEY=your-secret-key
-AWS_STORAGE_BUCKET_NAME=your-bucket-name
-AWS_S3_REGION_NAME=us-east-1
-```
+| Page | URL | What It Does |
+|---|---|---|
+| Login/Register | `/login/` | Sign in or create account |
+| Dashboard | `/dashboard/` | View, add, edit, delete vehicles |
+| Transactions | `/txn/<id>/` | View, add, edit, delete fuel transactions |
+| System Status | `/status/` | Database connection info (password-protected) |
+| Health Check | `/health/` | Returns "OK" (used by Docker) |
+| Admin Panel | `/admin/` | Django admin for direct data management |
 
-4. **Collect Static Files to S3**:
+---
+
+## Environment Variables
+
+Copy `.env.sample` to `.env` and adjust as needed.
+
+| Variable | Default | What It Does |
+|---|---|---|
+| `SECRET_KEY` | `django-insecure-...` | **Change this in production** |
+| `DEBUG` | `False` | `True` for development |
+| `ALLOWED_HOSTS` | `*` | Hosts allowed to access the app |
+| `USE_REMOTE_DB` | `False` | `True` = connect to PostgreSQL, `False` = local SQLite |
+| `DB_NAME` | `postgres` | Database name (only when `USE_REMOTE_DB=True`) |
+| `DB_USER` | `postgres` | Database user |
+| `DB_PASSWORD` | `postgres` | Database password |
+| `DB_HOST` | `localhost` | Database host address |
+| `DB_PORT` | `5432` | Database port |
+| `USE_AWS_S3` | `False` | `True` = host static files on AWS S3 |
+| `AWS_ACCESS_KEY_ID` | — | AWS access key |
+| `AWS_SECRET_ACCESS_KEY` | — | AWS secret key |
+| `AWS_STORAGE_BUCKET_NAME` | — | S3 bucket name |
+| `AWS_S3_REGION_NAME` | `us-east-1` | AWS region |
+| `STATUS_USER` | `admin` | Username for `/status/` page |
+| `STATUS_PASS` | `status123` | Password for `/status/` page |
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Backend | Django 6.0, Django REST Framework |
+| Auth | JWT (SimpleJWT) — access token 4 weeks |
+| Database | SQLite (local) or PostgreSQL (remote) |
+| Static Files | Local filesystem or AWS S3 |
+| Frontend | Bootstrap 5.3, jQuery 3.7, custom CSS/JS |
+| Container | Docker + Gunicorn + docker-compose |
+| Package Manager | uv |
+
+---
+
+## Docker Commands
 
 ```bash
-uv run manage.py collectstatic --clear
+docker compose up --build      # Start (with live reload)
+docker compose up -d --build   # Start in background
+docker compose down            # Stop
+docker compose down -v         # Stop + remove volumes
+
+# Shell access inside running container
+docker exec -it fuel_check /bin/sh
+
+# Commands inside container (venv auto-detected):
+python manage.py migrate
+python manage.py collectstatic
+python manage.py createsuperuser
 ```
 
-Static files will be uploaded to `s3://your-bucket-name/static/`
-
-### URL Structure
-
-- Static files: `https://your-bucket.s3.us-east-1.amazonaws.com/static/`
-- Media files: `https://your-bucket.s3.us-east-1.amazonaws.com/media/`
+---
 
 ## API Endpoints
 
-### Authentication
-
-- `POST /api/token/` - Get JWT token
-- `POST /api/token/refresh/` - Refresh JWT token
+### Auth (no login required)
+```
+POST /user/login/         { "username": "email", "password": "..." }
+POST /user/register/      { "first_name", "last_name", "email", "password" }
+```
 
 ### Vehicles
-
-- `GET /api/vehicles/` - List user's vehicles
-- `POST /api/vehicles/` - Add new vehicle
-- `GET /api/vehicles/{id}/` - Get vehicle details
-- `PUT /api/vehicles/{id}/` - Update vehicle
-- `DELETE /api/vehicles/{id}/` - Delete vehicle
+```
+GET    /api/vehicles/          List your vehicles
+POST   /api/vehicles/          Create a vehicle
+GET    /api/vehicles/{id}/     Get vehicle details
+PATCH  /api/vehicles/{id}/     Update vehicle
+DELETE /api/vehicles/{id}/     Delete vehicle
+```
 
 ### Transactions
-
-- `GET /api/transactions/` - List fuel transactions
-- `POST /api/transactions/` - Add fuel transaction
-- `GET /api/transactions/{id}/` - Get transaction details
-- `DELETE /api/transactions/{id}/` - Delete transaction
-
-### Admin
-
-- `/admin/` - Django admin panel
-
-## Environment Variables Reference
-
-| Variable                  | Description                    | Required      |
-|---------------------------|--------------------------------|---------------|
-| `SECRET_KEY`              | Django secret key              | Yes           |
-| `DEBUG`                   | Debug mode (True/False)        | Yes           |
-| `ALLOWED_HOSTS`           | Comma-separated allowed hosts  | Yes           |
-| `DB_NAME`                 | PostgreSQL database name       | Yes           |
-| `DB_USER`                 | Supabase database user         | Yes           |
-| `DB_PASSWORD`             | Supabase database password     | Yes           |
-| `DB_HOST`                 | Supabase host (pooler)         | Yes           |
-| `DB_PORT`                 | Database port (6543)           | Yes           |
-| `USE_AWS_S3`              | Enable S3 storage (True/False) | No            |
-| `AWS_ACCESS_KEY_ID`       | AWS access key                 | If S3 enabled |
-| `AWS_SECRET_ACCESS_KEY`   | AWS secret key                 | If S3 enabled |
-| `AWS_STORAGE_BUCKET_NAME` | S3 bucket name                 | If S3 enabled |
-| `AWS_S3_REGION_NAME`      | AWS region                     | If S3 enabled |
-
-## Common Commands
-
-```bash
-# Install dependencies
-uv sync
-
-# Run migrations
-uv run manage.py migrate
-
-# Create migrations
-uv run manage.py makemigrations
-
-# Run server
-uv run manage.py runserver
-
-# Collect static files
-uv run manage.py collectstatic
-uv run manage.py collectstatic --clear  # Clear before collecting
-
-# Create superuser
-uv run manage.py createsuperuser
-
-# Check Django configuration
-uv run manage.py check
-
-# Shell access
-uv run manage.py shell
 ```
+GET    /api/txns/?vehicle={id}              List transactions
+POST   /api/txns/                            Create transaction
+GET    /api/txns/{id}/                       Get transaction details
+PATCH  /api/txns/{id}/                       Update transaction
+DELETE /api/txns/{id}/                       Delete transaction
+```
+Query params for listing: `&search=... &ordering=-created_at &tank_fully_filled=true`
 
-## Deployment
+---
 
-### Vercel (Serverless)
-
-1. Install Vercel CLI: `npm i -g vercel`
-2. Deploy: `vercel`
-3. Set environment variables in Vercel dashboard
-
-### Key Settings for Production
+## Directory Structure
 
 ```
-ALenv
-DEBUG=FalseLOWED_HOSTS=your-domain.com,your-app.vercel.app
-USE_AWS_S3=True
+fuel_check-core/
+├── project/           # Django project config (settings, urls, wsgi)
+├── fuel_check/        # Vehicles & transactions app (models, views, API)
+├── user/              # Authentication app (login, register, JWT)
+├── static/            # CSS & JavaScript files
+│   ├── css/
+│   └── js/
+├── templates/         # HTML pages
+├── Dockerfile         # Container build
+├── docker-compose.yml # Container orchestration
+├── entrypoint.sh      # Container startup script
+├── pyproject.toml     # Python dependencies
+├── .env.sample        # Environment template
+└── manage.py          # Django entry point
 ```
 
-## License
+---
 
-MIT License
+## Need Help?
+
+- **Status page**: Visit `/status/` to see if your database is connected
+- **Health check**: `/health/` returns "OK" when the server is running
+- **Logs**: `docker compose logs -f` to watch live logs

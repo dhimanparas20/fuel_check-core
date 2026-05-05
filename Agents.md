@@ -1,196 +1,296 @@
 # AI Agent Documentation
 
-This document provides guidance for AI agents working with the Fuel Check Core codebase.
+This document is the **single source of truth** for any AI agent working on this codebase. Read it fully before making changes.
 
-## Project Overview
+---
 
-Fuel Check Core is a Django REST API for tracking vehicle fuel consumption and mileage. Built with Django 6.x, DRF,
-Supabase PostgreSQL, and optional AWS S3 for static files.
+## Project Identity
 
-## Key Files
+**Fuel Check Core** — Django 6.x REST API for tracking vehicle fuel consumption, mileage, and expenses. Server-rendered HTML templates (not SPA) with Bootstrap 5, jQuery, and custom JS/CSS. JWT auth, SQLite or PostgreSQL, optional AWS S3.
 
-| File                        | Purpose                               |
-|-----------------------------|---------------------------------------|
-| `project/settings.py`       | Django settings, DB config, S3 config |
-| `fuel_check/models.py`      | Vehicle and Txn (transaction) models  |
-| `fuel_check/serializers.py` | DRF serializers                       |
-| `fuel_check/views.py`       | API views                             |
-| `fuel_check/urls.py`        | URL routing                           |
-| `user/models.py`            | Custom user model                     |
-| `user/views.py`             | Auth views                            |
-| `.env`                      | Environment variables                 |
+---
 
-## Environment Variables
+## Directory Tree
 
-### Required
-
-```env
-SECRET_KEY=your-secret-key
-DEBUG=True/False
-ALLOWED_HOSTS=localhost,127.0.0.1,*.vercel.app
-DB_NAME=postgres
-DB_USER=postgres.your-project-ref
-DB_PASSWORD=your-password
-DB_HOST=aws-1-ap-south-1.pooler.supabase.com
-DB_PORT=6543
+```
+fuel_check-core/
+├── project/                    # Django project config
+│   ├── settings.py             # ALL config: DB, static, JWT, CORS, timezone
+│   ├── urls.py                 # Root URL routing + /health/ + /status/
+│   └── wsgi.py                 # WSGI entry (used by gunicorn)
+├── fuel_check/                 # Main app — vehicles & transactions
+│   ├── models.py               # Vehicle + Txn models + recalculate_stats()
+│   ├── serializers.py          # DRF serializers
+│   ├── views.py                # API views (ViewSets)
+│   ├── urls.py                 # /api/vehicles/, /api/txns/
+│   ├── admin.py                # Django admin registration
+│   └── migrations/             # 7 migrations
+├── user/                       # Auth app
+│   ├── views.py                # Login, Register views (returns JWT)
+│   ├── serializers.py
+│   ├── urls.py                 # /user/login/, /user/register/
+│   └── models.py               # Empty (uses Django default User)
+├── static/
+│   ├── css/
+│   │   ├── common.css          # Shared design tokens, animations, toast styles
+│   │   ├── dash.css            # Dashboard page styles
+│   │   ├── txn.css             # Transactions page styles
+│   │   └── login.css           # Login/Register page styles
+│   └── js/
+│       ├── toast.js            # Toast notification system + confirm modal (Toast.show, Toast.confirm)
+│       ├── dash.js             # Dashboard logic (jQuery, vehicle CRUD, AJAX)
+│       ├── txn.js              # Transactions logic (jQuery, txn CRUD, search/sort)
+│       └── login.js            # Login/Register logic (vanilla JS fetch)
+├── templates/
+│   ├── dash.html               # Dashboard page
+│   ├── txn.html                # Transactions page
+│   ├── login.html              # Login/Register page
+│   └── status.html             # DB connection status page
+├── manage.py                   # Django manage.py entry
+├── pyproject.toml              # Dependencies + requires-python>=3.13
+├── uv.lock                     # Locked dependency versions
+├── requirements.txt            # Pip-compatible dependency list
+├── Dockerfile                  # python:3.13-slim, uv, /opt/venv, entrypoint
+├── docker-compose.yml          # web service, bind mount .:/app, port 8000
+├── .dockerignore               # Build context exclusions
+├── entrypoint.sh               # migrate → createsuperuser → gunicorn
+├── .env                        # Runtime env vars (NOT committed)
+├── .env.sample                 # Env var template
+├── .gitignore
+├── vercel.json                 # Vercel serverless config
+└── README.md                   # Human-friendly docs
 ```
 
-### AWS S3 (Optional)
+---
 
-```env
-USE_AWS_S3=True/False
-AWS_ACCESS_KEY_ID=your-access-key
-AWS_SECRET_ACCESS_KEY=your-secret-key
-AWS_STORAGE_BUCKET_NAME=your-bucket
-AWS_S3_REGION_NAME=us-east-1
-```
+## Environment Variables (ALL)
 
-## Key Settings
+| Variable | Default | Purpose |
+|---|---|---|
+| `SECRET_KEY` | `django-insecure-...` | Django secret key |
+| `DEBUG` | `False` | Debug mode (`True`/`False`) |
+| `ALLOWED_HOSTS` | `*` | Comma-separated host list |
+| `USE_REMOTE_DB` | `False` | **TRUE** → PostgreSQL, **FALSE/unset** → SQLite |
+| `DB_NAME` | `postgres` | PostgreSQL database name (only when `USE_REMOTE_DB=True`) |
+| `DB_USER` | `postgres` | PostgreSQL user |
+| `DB_PASSWORD` | `postgres` | PostgreSQL password |
+| `DB_HOST` | `localhost` | PostgreSQL host |
+| `DB_PORT` | `5432` | PostgreSQL port |
+| `USE_AWS_S3` | `False` | Enable S3 static/media storage |
+| `AWS_ACCESS_KEY_ID` | — | AWS access key (if S3 enabled) |
+| `AWS_SECRET_ACCESS_KEY` | — | AWS secret key (if S3 enabled) |
+| `AWS_STORAGE_BUCKET_NAME` | — | S3 bucket name |
+| `AWS_S3_REGION_NAME` | — | S3 region (default: us-east-1) |
+| `STATUS_USER` | `admin` | HTTP Basic Auth username for `/status/` |
+| `STATUS_PASS` | `status123` | HTTP Basic Auth password for `/status/` |
 
-### Database (Supabase PostgreSQL)
+---
 
-In `project/settings.py`:
+## Database Switching Logic
 
 ```python
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.getenv("DB_NAME"),
-        "USER": os.getenv("DB_USER"),
-        "PASSWORD": os.getenv("DB_PASSWORD"),
-        "HOST": os.getenv("DB_HOST"),
-        "PORT": os.getenv("DB_PORT"),
-    }
-}
+# settings.py line ~89
+USE_REMOTE_DB = os.getenv("USE_REMOTE_DB", "False").lower() == "true"
+
+if USE_REMOTE_DB:
+    DATABASES = {...}  # PostgreSQL via env vars
+else:
+    DATABASES = {...}  # SQLite at BASE_DIR/data/db.sqlite3
 ```
 
-### AWS S3 Storage
+- **Local (Docker)**: `USE_REMOTE_DB=False` → SQLite in `data/db.sqlite3`, persisted via bind mount
+- **Cloud/Production**: `USE_REMOTE_DB=True` + fill in DB_* env vars → PostgreSQL
 
-When `USE_AWS_S3=True`:
+---
 
-- `STATIC_URL`: `https://bucket.s3.region.amazonaws.com/static/`
-- `MEDIA_URL`: `https://bucket.s3.region.amazonaws.com/media/`
-- Uses `storages.backends.s3boto3.S3Boto3Storage`
-- Static files uploaded to `static/` prefix in bucket
+## Static Files Storage
 
-When `USE_AWS_S3=False`:
+Both branches set `STATICFILES_DIRS = [BASE_DIR / "static"]` and `STORAGES` explicitly:
 
-- `STATIC_URL`: `/static/`
-- `MEDIA_URL`: `/media/`
-- Files stored locally in `staticfiles/` and `media/` directories
+- **S3 branch** (`USE_AWS_S3=True`): `storages.backends.s3boto3.S3Boto3Storage`
+- **Local branch** (`USE_AWS_S3=False`): `FileSystemStorage` / `StaticFilesStorage`
+- Both branches must have `STORAGES` set explicitly. **Failure to set STORAGES in the else branch causes collectstatic to hit S3 with 403 errors.**
 
-### JWT Authentication
+---
 
-```python
-SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(weeks=4),
-    "REFRESH_TOKEN_LIFETIME": timedelta(weeks=8),
-}
+## Docker Setup
+
+### Files Involved
+- **Dockerfile**: `python:3.13-slim`, apt installs `curl libpq-dev tzdata`, pip installs `uv`, copies `pyproject.toml uv.lock`, runs `uv sync --frozen`, copies source, `ENTRYPOINT ["./entrypoint.sh"]`
+- **entrypoint.sh**: Sets `PATH="/opt/venv/bin:$PATH"` → `python manage.py migrate` → creates superuser `admin/admin@123` if missing → `gunicorn project.wsgi:application --bind 0.0.0.0:8000 --workers 1 --timeout 120 --reload`
+- **docker-compose.yml**: Bind mount `.:/app`, port 8000, healthcheck at `/health/`, env from `.env`
+- **VENV location**: `/opt/venv` (NOT `/app/.venv`) — set by `UV_PROJECT_ENVIRONMENT=/opt/venv`
+- **PATH**: `/opt/venv/bin` prepended globally via Dockerfile ENV
+- **Timezone**: `TZ=Asia/Kolkata`, tzdata installed, `/etc/localtime` symlinked
+
+### Docker Commands
+```bash
+docker compose up --build     # Build + start with live reload
+docker compose up -d --build  # Detached mode
+docker compose down           # Stop containers
+docker compose down -v        # Stop + remove volumes
 ```
+
+### Inside Container
+```bash
+# Exec into container
+docker exec -it fuel_check /bin/sh
+
+# Commands inside (venv already in PATH):
+python manage.py migrate
+python manage.py collectstatic
+python manage.py createsuperuser
+```
+
+---
+
+## Frontend Architecture
+
+### Auth Flow
+1. User registers/logs in at `/login/` → JWT returned
+2. `access` and `refresh` tokens stored in `sessionStorage`
+3. All API calls include `Authorization: Bearer <access>` header
+4. 401 responses clear sessionStorage and redirect to `/login/`
+5. Token lifetime: access 4 weeks, refresh 8 weeks
+
+### Page Navigation
+```
+/login/        → Login/Register page
+/dashboard/    → Vehicle list (cards with actions)
+/txn/<id>/     → Transactions for a vehicle
+/admin/        → Django admin
+/health/       → Plain "OK" (Docker healthcheck)
+/status/       → DB connection stats (HTTP Basic Auth)
+```
+
+### JS Dependencies
+- **jQuery 3.7.1** (CDN) — used in `dash.js` and `txn.js` for AJAX
+- **Bootstrap 5.3.2** (CDN) — modals, grid, utilities
+- **Toast system** (`toast.js`) — loaded on all pages, provides:
+  - `Toast.success(title, msg)` — green toast
+  - `Toast.error(title, msg)` — red toast (stays 5s)
+  - `Toast.warning(title, msg)` — yellow toast
+  - `Toast.info(title, msg)` — blue toast
+  - `Toast.confirm(title, msg, icon)` — returns `Promise<boolean>`, replaces browser `confirm()`
+
+### When editing JS files
+- **DO NOT** alter the core AJAX logic (URLs, methods, headers)
+- **DO NOT** change `sessionStorage` key names (`access`, `refresh`)
+- **DO** use `Toast.success/error/warning` instead of `alert()`
+- **DO** use `Toast.confirm()` instead of `confirm()`
+- **DO** add `Toast.error(xhr.responseJSON?.detail || '...')` in error handlers
+
+### CSS Architecture
+- `common.css` loaded FIRST on all pages — defines `:root` CSS variables, keyframes, toast styles, skeleton, scrollbar
+- Page-specific CSS (dash.css, txn.css, login.css) overrides as needed
+- Design tokens: `--bg-deep`, `--bg-card`, `--border`, `--text`, `--accent`, `--success`, `--danger`
+
+---
 
 ## Models
 
-### Vehicle
+### Vehicle (`fuel_check/models.py`)
+| Field | Type | Notes |
+|---|---|---|
+| `regno` | CharField | Unique registration number |
+| `owner` | FK → User | |
+| `name` | CharField | Vehicle display name |
+| `model` | CharField | Model name (optional) |
+| `color` | CharField | Color name/hex (optional) |
+| `company` | CharField | Manufacturer (optional) |
+| `fuel_type` | CharField | `petrol` / `diesel` / `cng` |
+| `current_mileage` | FloatField | Latest txn mileage |
+| `total_kms_driven` | FloatField | Sum of all txn kms |
+| `average_mileage` | FloatField | Auto-calculated |
+| `fuel_tank_capacity` | FloatField | In liters |
+| `money_used` | FloatField | Sum of all txn amounts |
+| `last_service_date` | DateField | (optional) |
 
-- `regno`: Unique vehicle registration number
-- `owner`: ForeignKey to User
-- `name`: Vehicle name
-- `model`: Vehicle model
-- `company`: Vehicle manufacturer
-- `fuel_type`: petrol/diesel/cng
-- `current_mileage`: Latest recorded mileage
-- `total_kms_driven`: Sum of all kms driven
-- `average_mileage`: Calculated fuel efficiency
-- `money_used`: Total fuel cost
+**Key method**: `recalculate_stats()` — aggregates all Txns, updates `total_kms_driven`, `money_used`, `current_mileage`, `average_mileage`. Called automatically on Txn save/delete.
 
-### Txn (Transaction)
+### Txn / Transaction (`fuel_check/models.py`)
+| Field | Type | Notes |
+|---|---|---|
+| `vehicle` | FK → Vehicle | |
+| `owner` | FK → User | |
+| `amount` | DecimalField | Fuel cost |
+| `fuel_qty` | DecimalField | Liters filled |
+| `kms_driven` | FloatField | KMs since last fill |
+| `current_mileage` | FloatField | Auto-calculated when `tank_fully_filled=True` |
+| `tank_fully_filled` | BooleanField | |
+| `location` | CharField | Fuel station (optional) |
+| `txn_date` | DateField | (optional, defaults to today) |
 
-- `vehicle`: ForeignKey to Vehicle
-- `owner`: ForeignKey to User
-- `amount`: Fuel cost
-- `fuel_qty`: Fuel quantity in liters
-- `kms_driven`: Kilometers driven since last fill
-- `current_mileage`: Calculated mileage (kms/liter)
-- `tank_fully_filled`: Boolean flag
-- `location`: Fuel station location
-- `txn_date`: Date of transaction
+**Key method**: `save()` — calculates `current_mileage = kms_driven / fuel_qty` when `tank_fully_filled=True`, then calls `vehicle.recalculate_stats()`.
 
-## Key Methods
+---
 
-### Vehicle.recalculate_stats()
+## API Endpoints (all require JWT except auth)
 
-Recalculates vehicle statistics:
-
-- `total_kms_driven` - sum of all transaction kms_driven
-- `money_used` - sum of all transaction amounts
-- `current_mileage` - from latest transaction
-- `average_mileage` - kms_driven/fuel_qty (prefers full-tank fills)
-
-Called automatically when Txn is saved or deleted.
-
-### Txn.save()
-
-- Auto-calculates `current_mileage` when tank_fully_filled=True
-- Calls `vehicle.recalculate_stats()` after save
-
-## Commands
-
-```bash
-# Install dependencies
-uv sync
-
-# Run migrations
-uv run manage.py migrate
-
-# Create migrations
-uv run manage.py makemigrations
-
-# Collect static files (local)
-uv run manage.py collectstatic
-
-# Collect static files (S3 - clears bucket first)
-uv run manage.py collectstatic --clear  --noinput
-
-# Run server
-uv run manage.py runserver
-
-# Create superuser
-uv run manage.py createsuperuser
+### Auth (public)
+```
+POST /user/login/         Body: {username, password}  →  {access, refresh}
+POST /user/register/      Body: {first_name, last_name, email, password}
 ```
 
-## URL Patterns
-
-- `/admin/` - Django admin
-- `/api/` - API endpoints
-- `/api/token/` - JWT token obtain
-- `/api/token/refresh/` - JWT token refresh
-- `/api/vehicles/` - Vehicle CRUD
-- `/api/transactions/` - Transaction CRUD
-
-## Common Patterns
-
-### Checking if S3 is enabled
-
-```python
-USE_AWS_S3 = os.getenv("USE_AWS_S3", "False").lower() == "true"
+### Vehicles (JWT required)
+```
+GET    /api/vehicles/         List user's vehicles
+POST   /api/vehicles/         Create vehicle
+GET    /api/vehicles/{id}/    Retrieve
+PATCH  /api/vehicles/{id}/    Partial update
+DELETE /api/vehicles/{id}/    Delete
 ```
 
-### Using S3 in templates or code
-
-Static files are automatically served from S3 when `USE_AWS_S3=True` due to the STORAGES configuration.
-
-### STATICFILES_DIRS
-
-Must be set in BOTH S3 and local storage branches:
-
-```python
-STATICFILES_DIRS = [BASE_DIR / "static"]
+### Transactions (JWT required)
+```
+GET    /api/txns/?vehicle={id}&search=...&ordering=...&tank_fully_filled=...
+POST   /api/txns/             Create (body includes vehicle FK)
+GET    /api/txns/{id}/        Retrieve
+PATCH  /api/txns/{id}/        Partial update
+DELETE /api/txns/{id}/        Delete
 ```
 
-Without this, only app static files (admin, rest_framework) are collected.
+### System
+```
+GET    /health/               → 200 "OK" (no auth, Docker healthcheck)
+GET    /status/               → HTML page, HTTP Basic Auth (STATUS_USER/STATUS_PASS)
+```
 
-## Known Issues
+---
 
-1. **Static files not uploading to S3**: Check `STATICFILES_DIRS` is set in S3 branch
-2. **Admin static files only**: Missing `STATICFILES_DIRS` configuration
-3. **Database connection**: Ensure Supabase pooler port is 6543 (not 5432)
+## Django Settings Quick Reference
+
+| Setting | Value |
+|---|---|
+| `LANGUAGE_CODE` | `en-us` |
+| `TIME_ZONE` | `Asia/Kolkata` |
+| `USE_TZ` | `True` |
+| `TIME_FORMAT` (DRF) | `%d-%m-%Y %H:%M:%S` |
+| `JWT_ACCESS_LIFETIME` | 4 weeks |
+| `JWT_REFRESH_LIFETIME` | 8 weeks |
+| `INSTALLED_APPS` | rest_framework_simplejwt, corsheaders, django_filters, fuel_check, user, rest_framework, +django contrib |
+| `MIDDLEWARE` | Security, WhiteNoise, Session, Common, Csrf, Auth, Messages, XFrameOptions |
+
+---
+
+## Common Pitfalls
+
+1. **`collectstatic` hits S3 when `USE_AWS_S3=False`**: The `else` branch MUST set `STORAGES` explicitly with local backends.
+2. **Database not switching**: Database is controlled SOLELY by `USE_REMOTE_DB` env var, not by presence of DB_* vars.
+3. **`python` not found in container**: Venv is at `/opt/venv/bin`, which is in PATH via Dockerfile ENV. Rebuild if PATH is missing.
+4. **Gunicorn worker timeout**: Workers=1, timeout=120s in dev. Gunicorn uses `--reload` for live code updates.
+5. **Static files 404**: Run `python manage.py collectstatic` inside container, or set `DEBUG=True`.
+6. **401 on API calls**: JWT stored in `sessionStorage` with key `access`. Check browser console.
+7. **CORS**: `corsheaders` is installed in apps but `CorsMiddleware` is NOT in middleware. CORS config may need `CORS_ALLOW_ALL_ORIGINS=True` for dev.
+
+---
+
+## When Adding Features
+
+1. **New Python dependencies**: Add to both `pyproject.toml` AND `requirements.txt`, then run `uv lock` locally.
+2. **New static files**: Place in `static/css/` or `static/js/`, reference in templates with `{% static '...' %}`.
+3. **New templates**: Place in `templates/`, add URL in `project/urls.py`.
+4. **New API endpoints**: Add to `fuel_check/urls.py` or `user/urls.py`, import view in `views.py`.
+5. **New env vars**: Add to `.env.sample` with comments, document in this file.
+6. **Altering JS**: Keep jQuery AJAX patterns consistent. Use `Toast` for notifications. Use `Toast.confirm()` for destructive actions.
