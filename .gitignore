@@ -12,6 +12,7 @@ __pycache__
 *.pyc
 __pycache__
 db.sqlite3
+data/
 media
 db.sqlite3-journal
 

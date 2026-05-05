@@ -1,0 +1,16 @@
+.git
+.gitignore
+.idea
+.venv
+__pycache__
+*.py[cod]
+staticfiles
+media
+.env
+README.md
+AGENTS.md
+Dockerfile
+docker-compose.yml
+.dockerignore
+vercel.json
+requirements.txt

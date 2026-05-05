@@ -1,0 +1,252 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Status | Fuel Check</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{% static 'css/common.css' %}" rel="stylesheet">
+    <style>
+        body {
+            min-height: 100vh;
+            background: var(--bg-deep, #060b14);
+            color: var(--text, #e8edf5);
+            font-family: var(--font, 'Inter', sans-serif);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        .status-container {
+            width: 100%;
+            max-width: 660px;
+            animation: fadeInUp 0.5s ease;
+        }
+        .status-card {
+            background: var(--bg-card, #0f1a2e);
+            border: 1px solid var(--border, rgba(255,255,255,0.06));
+            border-radius: 1.5rem;
+            padding: 2.25rem 2rem;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.4);
+        }
+        .status-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border, rgba(255,255,255,0.06));
+        }
+        .status-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        .status-icon.sqlite {
+            background: rgba(34, 197, 94, 0.15);
+            color: #22c55e;
+        }
+        .status-icon.pg {
+            background: rgba(56, 189, 248, 0.15);
+            color: #38bdf8;
+        }
+        .status-title {
+            font-size: 1.4rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+        }
+        .status-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted, #94a3b8);
+        }
+        .badge-connected {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge-connected.ok {
+            background: rgba(34, 197, 94, 0.12);
+            color: #22c55e;
+            border: 1px solid rgba(34, 197, 94, 0.25);
+        }
+        .badge-connected.err {
+            background: rgba(248, 113, 113, 0.12);
+            color: #f87171;
+            border: 1px solid rgba(248, 113, 113, 0.25);
+        }
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: pulse-ring 2s infinite;
+        }
+        .pulse-dot.green { background: #22c55e; }
+        .pulse-dot.red { background: #f87171; }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 0.75rem;
+        }
+        .info-item {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border, rgba(255,255,255,0.06));
+            border-radius: 0.75rem;
+            padding: 1rem;
+            transition: all 0.2s ease;
+        }
+        .info-item:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: var(--border-hover, rgba(255,255,255,0.12));
+        }
+        .info-label {
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted, #94a3b8);
+            margin-bottom: 0.35rem;
+        }
+        .info-value {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text, #e8edf5);
+            word-break: break-all;
+        }
+        .info-value.accent {
+            background: linear-gradient(135deg, #38bdf8, #22d3ee);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .info-value.green { color: #22c55e; }
+        .info-value.mono {
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            font-weight: 500;
+            opacity: 0.75;
+        }
+
+        .db-highlight {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border, rgba(255,255,255,0.06));
+        }
+        .db-type-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 0.75rem;
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 1.25rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+        .db-type-badge.sqlite {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.25);
+            color: #22c55e;
+        }
+        .db-type-badge.pg {
+            background: rgba(56, 189, 248, 0.1);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            color: #38bdf8;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            color: var(--text-muted, #94a3b8);
+            text-decoration: none;
+            font-size: 0.85rem;
+            margin-top: 1.5rem;
+            transition: color 0.2s;
+        }
+        .back-link:hover { color: var(--text, #e8edf5); }
+    </style>
+</head>
+<body>
+<div class="status-container">
+    <div class="status-card">
+        <div class="status-header">
+            <div class="status-icon {% if is_local %}sqlite{% else %}pg{% endif %}">
+                {% if is_local %}📁{% else %}☁️{% endif %}
+            </div>
+            <div style="flex:1">
+                <div class="status-title">System Status</div>
+                <div class="status-subtitle">Fuel Check Core</div>
+            </div>
+            <span class="badge-connected {% if connected %}ok{% else %}err{% endif %}">
+                <span class="pulse-dot {% if connected %}green{% else %}red{% endif %}"></span>
+                {{ connected|yesno:"Connected,Disconnected" }}
+            </span>
+        </div>
+
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">Database Engine</div>
+                <div class="info-value accent">{{ vendor|upper }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Type</div>
+                <div class="info-value green">
+                    {% if is_local %}💻 Local File{% else %}🌐 Remote Server{% endif %}
+                </div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Database Name</div>
+                <div class="info-value mono">{{ name }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Host</div>
+                <div class="info-value mono">{{ host }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Port</div>
+                <div class="info-value">{{ port }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">User</div>
+                <div class="info-value mono">{{ user }}</div>
+            </div>
+        </div>
+
+        <div class="db-highlight">
+            <div class="db-type-badge {% if is_local %}sqlite{% else %}pg{% endif %}">
+                {{ vendor|upper }} {% if is_local %}(Embedded){% else %}(Client-Server){% endif %}
+            </div>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Django Version</div>
+                    <div class="info-value">{{ django_version }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Python Version</div>
+                    <div class="info-value">{{ python_version }}</div>
+                </div>
+                <div class="info-item" style="grid-column: 1 / -1;">
+                    <div class="info-label">Platform</div>
+                    <div class="info-value mono">{{ platform }}</div>
+                </div>
+            </div>
+        </div>
+
+        <a href="/dashboard" class="back-link">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            Back to Dashboard
+        </a>
+    </div>
+</div>
+</body>
+</html>

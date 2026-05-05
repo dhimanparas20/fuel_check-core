@@ -11,51 +11,46 @@ function setActiveView(view = 'login') {
         form.classList.toggle('is-active', form.dataset.view === view);
     });
     const formsWrapper = document.querySelector('.auth-forms');
-    if (formsWrapper) {
-        formsWrapper.dataset.active = view;
-    }
+    if (formsWrapper) formsWrapper.dataset.active = view;
 }
 
 switchButtons.forEach((button) => {
-    button.addEventListener('click', (event) => {
-        event.preventDefault();
-        const targetView = button.dataset.view;
-        setActiveView(targetView);
-    });
+    button.addEventListener('click', () => setActiveView(button.dataset.view));
 });
 
 setActiveView('login');
 
-const passwordToggles = document.querySelectorAll('[data-toggle-password]');
-passwordToggles.forEach((toggle) => {
+// Password toggle
+document.querySelectorAll('[data-toggle-password]').forEach((toggle) => {
     const input = document.getElementById(toggle.dataset.togglePassword);
     if (!input) return;
     toggle.addEventListener('click', () => {
-        const shouldShow = input.type === 'password';
-        input.type = shouldShow ? 'text' : 'password';
-        toggle.classList.toggle('active', shouldShow);
-        toggle.setAttribute('aria-label', shouldShow ? 'Hide password' : 'Show password');
-        input.focus({ preventScroll: true });
+        const show = input.type === 'password';
+        input.type = show ? 'text' : 'password';
+        toggle.classList.toggle('active', show);
+        toggle.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
     });
 });
 
-function clearError(element) {
-    if (!element) return;
-    element.classList.add('d-none');
-    element.textContent = '';
+function clearError(el) {
+    if (!el) return;
+    el.classList.add('d-none');
+    el.textContent = '';
+    el.classList.remove('success');
 }
 
-function showError(element, message) {
-    if (!element) return;
-    element.textContent = message;
-    element.classList.remove('d-none');
+function showError(el, message, isSuccess = false) {
+    if (!el) return;
+    el.textContent = message;
+    el.classList.remove('d-none', 'success');
+    if (isSuccess) el.classList.add('success');
 }
 
-function setLoading(button, isLoading) {
+function setLoading(button, loading) {
     if (!button) return;
-    if (isLoading) {
+    if (loading) {
         button.dataset.originalText = button.textContent;
-        button.textContent = 'Please wait…';
+        button.innerHTML = '<span class="spinner"></span> Please wait…';
         button.disabled = true;
     } else {
         if (button.dataset.originalText) {
@@ -67,11 +62,10 @@ function setLoading(button, isLoading) {
 }
 
 function wireFormClear(form, alertEl) {
-    form.querySelectorAll('input').forEach((input) => {
-        input.addEventListener('input', () => clearError(alertEl));
-    });
+    form.querySelectorAll('input').forEach(input => input.addEventListener('input', () => clearError(alertEl)));
 }
 
+// Login Form
 const loginForm = document.getElementById('loginForm');
 if (loginForm) {
     const loginError = document.getElementById('loginError');
@@ -79,20 +73,19 @@ if (loginForm) {
     loginForm.addEventListener('submit', async (event) => {
         event.preventDefault();
         clearError(loginError);
-        const email = document.getElementById('loginEmail').value.trim();
-        const password = document.getElementById('loginPassword').value;
         const submitButton = loginForm.querySelector('button[type="submit"]');
         try {
             setLoading(submitButton, true);
             const response = await fetch('/user/login/', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: email, password })
+                body: JSON.stringify({
+                    username: document.getElementById('loginEmail').value.trim(),
+                    password: document.getElementById('loginPassword').value
+                })
             });
             const data = await response.json();
-            if (!response.ok) {
-                throw new Error(data.detail || 'Login failed');
-            }
+            if (!response.ok) throw new Error(data.detail || 'Login failed');
             sessionStorage.setItem('access', data.access);
             sessionStorage.setItem('refresh', data.refresh);
             window.location.href = '/dashboard';
@@ -104,6 +97,7 @@ if (loginForm) {
     });
 }
 
+// Register Form
 const registerForm = document.getElementById('registerForm');
 if (registerForm) {
     const registerError = document.getElementById('registerError');
@@ -127,15 +121,13 @@ if (registerForm) {
             });
             const data = await response.json();
             if (!response.ok) {
-                const message = Array.isArray(data.email)
-                    ? data.email.join(' ')
-                    : data.email || data.detail || 'Registration failed';
+                const message = Array.isArray(data.email) ? data.email.join(' ') : (data.email || data.detail || 'Registration failed');
                 throw new Error(message);
             }
             registerForm.reset();
             setActiveView('login');
             const loginError = document.getElementById('loginError');
-            showError(loginError, 'Account created successfully. Please sign in.');
+            showError(loginError, 'Account created successfully! Please sign in.', true);
         } catch (error) {
             showError(registerError, error.message || 'Registration failed');
         } finally {
