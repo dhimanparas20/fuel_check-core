@@ -1,5 +1,5 @@
 $(document).ready(function() {
-    const access = sessionStorage.getItem('access');
+    const access = localStorage.getItem('access');
     if (!access) {
         window.location.href = '/login';
         return;
@@ -20,7 +20,7 @@ $(document).ready(function() {
                 }
             },
             error: function(xhr) {
-                if (xhr.status === 401) { sessionStorage.clear(); window.location.href = '/login'; }
+                if (xhr.status === 401) { localStorage.clear(); window.location.href = '/login'; }
             }
         });
     }
@@ -116,7 +116,7 @@ $(document).ready(function() {
                 }
             },
             error: function(xhr) {
-                if (xhr.status === 401) { sessionStorage.clear(); window.location.href = '/login'; }
+                if (xhr.status === 401) { localStorage.clear(); window.location.href = '/login'; }
                 else { Toast.error('Error', 'Failed to load transactions.'); }
             }
         });
@@ -261,10 +261,10 @@ $(document).ready(function() {
 
     function geocodeAndShowMap(location) {
         $.ajax({
-            url: '/api/location-search/?q=' + encodeURIComponent(location),
-            headers: { 'Authorization': 'Bearer ' + access },
+            url: 'https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(location),
+            dataType: 'json',
             success: function(results) {
-                if (!results.length) return;
+                if (!results || !results.length) return;
                 var r = results[0];
                 var lat = parseFloat(r.lat);
                 var lon = parseFloat(r.lon);
@@ -341,7 +341,7 @@ $(document).ready(function() {
         });
     });
 
-    // Location autocomplete
+    // Location autocomplete (client-side Nominatim API)
     var locSearchTimer;
     $('#location').on('input', function() {
         var q = $(this).val().trim();
@@ -349,13 +349,13 @@ $(document).ready(function() {
         clearTimeout(locSearchTimer);
         locSearchTimer = setTimeout(function() {
             $.ajax({
-                url: '/api/location-search/?q=' + encodeURIComponent(q),
-                headers: { 'Authorization': 'Bearer ' + access },
+                url: 'https://nominatim.openstreetmap.org/search?format=json&limit=5&q=' + encodeURIComponent(q),
+                dataType: 'json',
                 success: function(results) {
                     var $sug = $('#locationSuggestions').empty();
-                    if (!results.length) { $sug.hide(); return; }
+                    if (!results || !results.length) { $sug.hide(); return; }
                     results.forEach(function(r) {
-                        $sug.append('<div class="loc-suggestion" style="padding:0.5rem 0.8rem;cursor:pointer;font-size:0.8rem;border-bottom:1px solid var(--border);color:var(--text-muted)">' + r.name.substring(0, 80) + '</div>');
+                        $sug.append('<div class="loc-suggestion" data-lat="' + r.lat + '" data-lon="' + r.lon + '" style="padding:0.5rem 0.8rem;cursor:pointer;font-size:0.8rem;border-bottom:1px solid var(--border);color:var(--text-muted)">' + (r.display_name || '').substring(0, 80) + '</div>');
                     });
                     $('.loc-suggestion').hover(function(){$(this).css({background:'rgba(255,255,255,0.04)',color:'var(--text)'});}, function(){$(this).css({background:'transparent',color:'var(--text-muted)'});});
                     $sug.show();

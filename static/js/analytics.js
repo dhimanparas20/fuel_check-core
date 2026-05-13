@@ -1,5 +1,5 @@
 $(document).ready(function() {
-    const access = sessionStorage.getItem('access');
+    const access = localStorage.getItem('access');
     if (!access) { window.location.href = '/login'; return; }
 
     const vehicleId = window.location.pathname.split('/').filter(Boolean).pop();

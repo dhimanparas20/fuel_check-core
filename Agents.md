@@ -148,9 +148,9 @@ python manage.py createsuperuser
 
 ### Auth Flow
 1. User registers/logs in at `/login/` → JWT returned
-2. `access` and `refresh` tokens stored in `sessionStorage`
+2. `access` and `refresh` tokens stored in `localStorage`
 3. All API calls include `Authorization: Bearer <access>` header
-4. 401 responses clear sessionStorage and redirect to `/login/`
+4. 401 responses clear localStorage and redirect to `/login/`
 5. Token lifetime: access 4 weeks, refresh 8 weeks
 
 ### Page Navigation
@@ -175,7 +175,7 @@ python manage.py createsuperuser
 
 ### When editing JS files
 - **DO NOT** alter the core AJAX logic (URLs, methods, headers)
-- **DO NOT** change `sessionStorage` key names (`access`, `refresh`)
+- **DO NOT** change `localStorage` key names (`access`, `refresh`)
 - **DO** use `Toast.success/error/warning` instead of `alert()`
 - **DO** use `Toast.confirm()` instead of `confirm()`
 - **DO** add `Toast.error(xhr.responseJSON?.detail || '...')` in error handlers
@@ -281,7 +281,7 @@ GET    /status/               → HTML page, HTTP Basic Auth (STATUS_USER/STATUS
 3. **`python` not found in container**: Venv is at `/opt/venv/bin`, which is in PATH via Dockerfile ENV. Rebuild if PATH is missing.
 4. **Gunicorn worker timeout**: Workers=1, timeout=120s in dev. Gunicorn uses `--reload` for live code updates.
 5. **Static files 404**: Run `python manage.py collectstatic` inside container, or set `DEBUG=True`.
-6. **401 on API calls**: JWT stored in `sessionStorage` with key `access`. Check browser console.
+6. **401 on API calls**: JWT stored in `localStorage` with key `access`. Check browser console.
 7. **CORS**: `corsheaders` is installed in apps but `CorsMiddleware` is NOT in middleware. CORS config may need `CORS_ALLOW_ALL_ORIGINS=True` for dev.
 
 ---

@@ -262,25 +262,3 @@ def car_details(request):
         return Response({}, status=status.HTTP_200_OK)
 
 
-@api_view(["GET"])
-@permission_classes([IsAuthenticated])
-def location_search(request):
-    q = request.GET.get("q", "")
-    logger.info("Location search: '%s' by %s", q[:50], request.user.username)
-    if len(q) < 2:
-        return Response([], status=status.HTTP_200_OK)
-    try:
-        url = (
-            "https://nominatim.openstreetmap.org/search"
-            f"?format=json&limit=5&q={urllib.parse.quote(q)}"
-        )
-        req = urllib.request.Request(url, headers={"User-Agent": "FuelCheck/1.0"})
-        with urllib.request.urlopen(req, timeout=10) as resp:
-            data = json.loads(resp.read())
-            results = [
-                {"name": r.get("display_name", ""), "lat": r.get("lat"), "lon": r.get("lon")}
-                for r in data
-            ]
-            return Response(results)
-    except Exception:
-        return Response([], status=status.HTTP_200_OK)

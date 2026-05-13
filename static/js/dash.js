@@ -1,5 +1,5 @@
 $(document).ready(function() {
-    const access = sessionStorage.getItem('access');
+    const access = localStorage.getItem('access');
     if (!access) {
         window.location.href = '/login';
         return;
@@ -149,7 +149,7 @@ $(document).ready(function() {
                 }
             },
             error: function(xhr) {
-                if (xhr.status === 401) { sessionStorage.clear(); window.location.href = '/login'; }
+                if (xhr.status === 401) { localStorage.clear(); window.location.href = '/login'; }
                 else { Toast.error('Error', 'Failed to load vehicles.'); }
             }
         });
@@ -399,7 +399,7 @@ $(document).ready(function() {
     });
 
     $('#logoutBtn').click(function() {
-        sessionStorage.clear();
+        localStorage.clear();
         window.location.href = '/login';
     });
 });

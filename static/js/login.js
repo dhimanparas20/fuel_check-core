@@ -1,3 +1,7 @@
+if (localStorage.getItem('access')) {
+    window.location.href = '/dashboard';
+}
+
 const switchButtons = document.querySelectorAll('.auth-switch-btn');
 const authForms = document.querySelectorAll('.auth-form');
 
@@ -86,8 +90,8 @@ if (loginForm) {
             });
             const data = await response.json();
             if (!response.ok) throw new Error(data.detail || 'Login failed');
-            sessionStorage.setItem('access', data.access);
-            sessionStorage.setItem('refresh', data.refresh);
+            localStorage.setItem('access', data.access);
+            localStorage.setItem('refresh', data.refresh);
             window.location.href = '/dashboard';
         } catch (error) {
             showError(loginError, error.message || 'Unable to login');
