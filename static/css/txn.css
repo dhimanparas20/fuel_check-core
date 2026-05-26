@@ -104,7 +104,7 @@ body.txn-page {
     transition: all 0.2s ease;
     min-width: 130px;
 }
-.control-group:focus-within { border-color: var(--accent, #38bdf8); box-shadow: 0 0 0 3px rgba(56,189,248,0.08); }
+.control-group:focus-within { border-color: var(--accent, #38bdf8); box-shadow: 0 0 0 3px rgba(56,189,248,0.08); color: var(--text); }
 
 .control-icon { color: var(--text-muted); margin-right: 0.4rem; flex-shrink: 0; }
 .control-icon svg { width: 15px; height: 15px; }
@@ -403,7 +403,7 @@ body.txn-page {
     padding: 0.55rem 0.8rem;
     transition: all 0.2s ease;
 }
-.field-control:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(56,189,248,0.08); }
+.field-control:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(56,189,248,0.08); color: var(--text); }
 
 .field-control input, .field-control select {
     flex: 1;

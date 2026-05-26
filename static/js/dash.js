@@ -282,14 +282,21 @@ $(document).ready(function() {
     $(document).on('click', '.card-action-btn.details', function(e) {
         e.stopPropagation();
         const id = $(this).data('id');
+        Loader.show();
         $.ajax({
             url: `/api/vehicles/${id}/`,
             method: 'GET',
             headers: { 'Authorization': 'Bearer ' + access },
             success: function(vehicle) {
+                Loader.hide();
                 $('#vehicleDetailsBody').html(vehicleDetailsHtml(vehicle));
                 $('#vehicleDetailsBody').data('vehicle', vehicle);
                 $('#vehicleDetailsModal').modal('show');
+            },
+            error: function(xhr) {
+                Loader.hide();
+                if (xhr.status === 401) { localStorage.clear(); window.location.href = '/login'; }
+                else { Toast.error('Error', 'Failed to load vehicle details.'); }
             }
         });
     });
@@ -305,15 +312,22 @@ $(document).ready(function() {
             $('#vehicleModal').modal('show');
             return;
         }
+        Loader.show();
         $.ajax({
             url: `/api/vehicles/${id}/`,
             method: 'GET',
             headers: { 'Authorization': 'Bearer ' + access },
             success: function(vehicle) {
+                Loader.hide();
                 populateVehicleForm(vehicle);
                 $('#vehicleModalLabel').text('Edit Vehicle - ' + (vehicle.name || vehicle.regno));
                 $('.modal-subtitle').text('Update vehicle information');
                 $('#vehicleModal').modal('show');
+            },
+            error: function(xhr) {
+                Loader.hide();
+                if (xhr.status === 401) { localStorage.clear(); window.location.href = '/login'; }
+                else { Toast.error('Error', 'Could not fetch vehicle.'); }
             }
         });
     });

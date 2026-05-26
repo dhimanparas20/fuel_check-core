@@ -8,27 +8,32 @@ $(document).ready(function() {
     let mileageChart = null, spendingChart = null, priceChart = null;
 
     function loadVehicle() {
+        Loader.show();
         $.ajax({
             url: `/api/vehicles/${vehicleId}/`,
             headers: { 'Authorization': 'Bearer ' + access },
             success: function(data) {
+                Loader.hide();
                 vehicleData = data;
                 $('#vehicleName').text(data.name + ' · ' + data.regno.toUpperCase());
-            }
+            },
+            error: function() { Loader.hide(); }
         });
     }
 
     function loadAnalytics() {
+        Loader.show();
         $.ajax({
             url: `/api/vehicles/${vehicleId}/analytics/`,
             headers: { 'Authorization': 'Bearer ' + access },
             success: function(data) {
+                Loader.hide();
                 renderSummary(data.summary);
                 renderMileageChart(data.mileage_trend);
                 renderSpendingChart(data.spending_trend);
                 renderPriceChart(data.price_trend);
             },
-            error: function() { Toast.error('Error', 'Failed to load analytics.'); }
+            error: function() { Loader.hide(); Toast.error('Error', 'Failed to load analytics.'); }
         });
     }
 
@@ -180,10 +185,12 @@ $(document).ready(function() {
 
     // --- Service Records ---
     function loadServices() {
+        Loader.show();
         $.ajax({
             url: `/api/services/?vehicle=${vehicleId}`,
             headers: { 'Authorization': 'Bearer ' + access },
             success: function(data) {
+                Loader.hide();
                 const list = Array.isArray(data) ? data : (data.results || []);
                 const $slist = $('#serviceList').empty();
 
@@ -209,7 +216,8 @@ $(document).ready(function() {
                         </div>
                     `);
                 });
-            }
+            },
+            error: function() { Loader.hide(); Toast.error('Error', 'Failed to load service records.'); }
         });
     }
 

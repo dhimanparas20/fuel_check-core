@@ -157,6 +157,7 @@ body.auth-page {
 .field-control:focus-within {
     border-color: var(--accent);
     box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.08);
+    color: var(--text);
 }
 
 .field-control input {

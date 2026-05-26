@@ -9,17 +9,20 @@ $(document).ready(function() {
     let vehicleData = null;
 
     function loadVehicleData() {
+        Loader.show();
         $.ajax({
             url: `/api/vehicles/${vehicleId}/`,
             method: 'GET',
             headers: { 'Authorization': 'Bearer ' + access },
             success: function(data) {
+                Loader.hide();
                 vehicleData = data;
                 if (data.name) {
                     $('.txn-vehicle-name').text(data.name + ' · ' + (data.regno || '').toUpperCase());
                 }
             },
             error: function(xhr) {
+                Loader.hide();
                 if (xhr.status === 401) { localStorage.clear(); window.location.href = '/login'; }
             }
         });
@@ -148,12 +151,13 @@ $(document).ready(function() {
         e.stopPropagation();
         $('#txnModalLabel').text('Edit Transaction');
         var id = $(this).data('id');
+        Loader.show();
         $.ajax({
             url: '/api/txns/' + id + '/',
             method: 'GET',
             headers: { 'Authorization': 'Bearer ' + access },
-            success: function(txn) { populateTxnForm(txn); $('#txnModal').modal('show'); },
-            error: function() { Toast.error('Error', 'Could not fetch transaction.'); }
+            success: function(txn) { Loader.hide(); populateTxnForm(txn); $('#txnModal').modal('show'); },
+            error: function() { Loader.hide(); Toast.error('Error', 'Could not fetch transaction.'); }
         });
     });
 
@@ -227,11 +231,13 @@ $(document).ready(function() {
         $('#txnMapContainer').hide();
         $('#txnComparison').empty();
 
+        Loader.show();
         $.ajax({
             url: '/api/txns/' + txnId + '/',
             method: 'GET',
             headers: { 'Authorization': 'Bearer ' + access },
             success: function(txn) {
+                Loader.hide();
                 var amount = parseFloat(txn.amount);
                 var fuelQty = parseFloat(txn.fuel_qty);
                 var kmsDriven = txn.kms_driven ? parseFloat(txn.kms_driven) : null;
@@ -259,7 +265,7 @@ $(document).ready(function() {
                 loadComparison(txn);
                 $('#txnDetailsModal').modal('show');
             },
-            error: function() { Toast.error('Error', 'Could not load transaction details.'); }
+            error: function() { Loader.hide(); Toast.error('Error', 'Could not load transaction details.'); }
         });
     });
 

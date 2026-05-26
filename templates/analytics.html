@@ -221,6 +221,13 @@
             box-shadow: 0 0 0 3px rgba(56,189,248,0.08);
         }
         .service-form-inline select { background: var(--bg-input); }
+        .service-form-inline input[type="date"] {
+            padding-right: 2.5rem;
+        }
+        .service-form-inline input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            cursor: pointer;
+        }
         .cf-row { display: flex; gap: 0.5rem; margin-top: 0.75rem; justify-content: flex-end; }
         @media (max-width: 768px) {
             .service-form-inline .row { grid-template-columns: 1fr; }
