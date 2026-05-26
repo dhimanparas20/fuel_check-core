@@ -212,6 +212,7 @@ $(document).ready(function() {
                                 ${sr.garage_name ? '<span>🏪 ' + sr.garage_name + '</span>' : ''}
                             </div>
                             ${costDisplay ? '<span class="si-cost">' + costDisplay + '</span>' : ''}
+                            ${sr.notes ? '<div class="si-notes">📝 ' + sr.notes + '</div>' : ''}
                             <button class="si-delete" data-id="${sr.id}">×</button>
                         </div>
                     `);
@@ -232,6 +233,7 @@ $(document).ready(function() {
             cost: parseFloat($('#sr_cost').val()) || 0,
             garage_name: $('#sr_garage').val().trim(),
             odometer_reading: parseFloat($('#sr_odo').val()) || null,
+            notes: $('#sr_notes').val().trim(),
         };
 
         $.ajax({
@@ -241,6 +243,7 @@ $(document).ready(function() {
             data: JSON.stringify(data),
             success: function() {
                 $('#serviceForm').removeClass('active');
+                $('#sr_notes').val('');
                 loadServices();
                 Toast.success('Added', 'Service record saved.');
             },
