@@ -221,12 +221,28 @@
             box-shadow: 0 0 0 3px rgba(56,189,248,0.08);
         }
         .service-form-inline select { background: var(--bg-input); }
-        .service-form-inline input[type="date"] {
+        .date-input-wrapper {
+            position: relative;
+        }
+        .date-input-wrapper input[type="date"] {
             padding-right: 2.5rem;
         }
-        .service-form-inline input[type="date"]::-webkit-calendar-picker-indicator {
-            filter: invert(1);
+        .date-input-wrapper .date-icon {
+            position: absolute;
+            right: 0.8rem;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            opacity: 0.5;
+            font-size: 1rem;
+        }
+        .date-input-wrapper input[type="date"]::-webkit-calendar-picker-indicator {
+            background: transparent;
             cursor: pointer;
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
         }
         .cf-row { display: flex; gap: 0.5rem; margin-top: 0.75rem; justify-content: flex-end; }
         @media (max-width: 768px) {
@@ -270,7 +286,10 @@
         </div>
         <div class="service-form-inline" id="serviceForm">
             <div class="row">
-                <input type="date" id="sr_date" placeholder="Service Date">
+                <div class="date-input-wrapper">
+                    <input type="date" id="sr_date" placeholder="Service Date">
+                    <span class="date-icon">📅</span>
+                </div>
                 <select id="sr_type" style="appearance:auto">
                     <option value="regular_service">Regular Service</option>
                     <option value="oil_change">Oil Change</option>

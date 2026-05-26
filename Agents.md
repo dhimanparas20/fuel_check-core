@@ -16,15 +16,15 @@ This document is the **single source of truth** for any AI agent working on this
 fuel_check-core/
 ├── project/                    # Django project config
 │   ├── settings.py             # ALL config: DB, static, JWT, CORS, timezone
-│   ├── urls.py                 # Root URL routing + /health/ + /status/
+│   ├── urls.py                 # Root URL routing + /health/ + /status/ + /analytics/
 │   └── wsgi.py                 # WSGI entry (used by gunicorn)
-├── fuel_check/                 # Main app — vehicles & transactions
-│   ├── models.py               # Vehicle + Txn models + recalculate_stats()
+├── fuel_check/                 # Main app — vehicles, transactions & services
+│   ├── models.py               # Vehicle + Txn + ServiceRecord models + recalculate_stats()
 │   ├── serializers.py          # DRF serializers
 │   ├── views.py                # API views (ViewSets)
-│   ├── urls.py                 # /api/vehicles/, /api/txns/
+│   ├── urls.py                 # /api/vehicles/, /api/txns/, /api/services/
 │   ├── admin.py                # Django admin registration
-│   └── migrations/             # 7 migrations
+│   └── migrations/             # 8 migrations
 ├── user/                       # Auth app
 │   ├── views.py                # Login, Register views (returns JWT)
 │   ├── serializers.py
@@ -32,18 +32,20 @@ fuel_check-core/
 │   └── models.py               # Empty (uses Django default User)
 ├── static/
 │   ├── css/
-│   │   ├── common.css          # Shared design tokens, animations, toast styles
+│   │   ├── common.css          # Shared design tokens, animations, toast, loader, scrollbar
 │   │   ├── dash.css            # Dashboard page styles
 │   │   ├── txn.css             # Transactions page styles
 │   │   └── login.css           # Login/Register page styles
 │   └── js/
-│       ├── toast.js            # Toast notification system + confirm modal (Toast.show, Toast.confirm)
-│       ├── dash.js             # Dashboard logic (jQuery, vehicle CRUD, AJAX)
-│       ├── txn.js              # Transactions logic (jQuery, txn CRUD, search/sort)
+│       ├── toast.js            # Toast notifications + Confirm modal + Loader overlay (Loader.show/hide)
+│       ├── dash.js             # Dashboard logic (jQuery, vehicle CRUD, AJAX, car lookup)
+│       ├── txn.js              # Transactions logic (jQuery, txn CRUD, search/sort, details modal)
+│       ├── analytics.js        # Analytics charts (Chart.js), service records, stats
 │       └── login.js            # Login/Register logic (vanilla JS fetch)
 ├── templates/
 │   ├── dash.html               # Dashboard page
 │   ├── txn.html                # Transactions page
+│   ├── analytics.html          # Analytics charts, service history, stats
 │   ├── login.html              # Login/Register page
 │   └── status.html             # DB connection status page
 ├── manage.py                   # Django manage.py entry
@@ -83,6 +85,8 @@ fuel_check-core/
 | `AWS_S3_REGION_NAME` | — | S3 region (default: us-east-1) |
 | `STATUS_USER` | `admin` | HTTP Basic Auth username for `/status/` |
 | `STATUS_PASS` | `status123` | HTTP Basic Auth password for `/status/` |
+| `SUPERUSER_EMAIL` | `admin@example.com` | Email for auto-created superuser |
+| `SUPERUSER_PASSWORD` | `Mst@2069` | Password for auto-created superuser |
 
 ---
 
@@ -117,7 +121,7 @@ Both branches set `STATICFILES_DIRS = [BASE_DIR / "static"]` and `STORAGES` expl
 
 ### Files Involved
 - **Dockerfile**: `python:3.13-slim`, apt installs `curl libpq-dev tzdata`, pip installs `uv`, copies `pyproject.toml uv.lock`, runs `uv sync --frozen`, copies source, `ENTRYPOINT ["./entrypoint.sh"]`
-- **entrypoint.sh**: Sets `PATH="/opt/venv/bin:$PATH"` → `python manage.py migrate` → creates superuser `admin/admin@123` if missing → `gunicorn project.wsgi:application --bind 0.0.0.0:8000 --workers 1 --timeout 120 --reload`
+- **entrypoint.sh**: Sets `PATH="/opt/venv/bin:$PATH"` → `python manage.py migrate` → creates superuser `admin/admin@123` if missing → collects static (only when `DEBUG=True`) → `gunicorn project.wsgi:application --bind 0.0.0.0:8000 --workers 1 --timeout 120 --reload`
 - **docker-compose.yml**: Bind mount `.:/app`, port 8000, healthcheck at `/health/`, env from `.env`
 - **VENV location**: `/opt/venv` (NOT `/app/.venv`) — set by `UV_PROJECT_ENVIRONMENT=/opt/venv`
 - **PATH**: `/opt/venv/bin` prepended globally via Dockerfile ENV
@@ -136,10 +140,14 @@ docker compose down -v        # Stop + remove volumes
 # Exec into container
 docker exec -it fuel_check /bin/sh
 
-# Commands inside (venv already in PATH):
-python manage.py migrate
-python manage.py collectstatic
-python manage.py createsuperuser
+# Commands inside (venv already in PATH, plus aliases):
+python manage.py migrate          # or: migrate
+python manage.py collectstatic    # or: collectstatic
+python manage.py createsuperuser  # or: createsuperuser
+python manage.py makemigrations   # or: makemigrations
+python manage.py shell            # or: shell
+python manage.py runserver 0.0.0.0:8000  # or: runserver
+python manage.py <cmd>            # or: manage <cmd>
 ```
 
 ---
@@ -158,6 +166,7 @@ python manage.py createsuperuser
 /login/        → Login/Register page
 /dashboard/    → Vehicle list (cards with actions)
 /txn/<id>/     → Transactions for a vehicle
+/analytics/<id>/ → Charts, stats, service records
 /admin/        → Django admin
 /health/       → Plain "OK" (Docker healthcheck)
 /status/       → DB connection stats (HTTP Basic Auth)
@@ -172,6 +181,9 @@ python manage.py createsuperuser
   - `Toast.warning(title, msg)` — yellow toast
   - `Toast.info(title, msg)` — blue toast
   - `Toast.confirm(title, msg, icon)` — returns `Promise<boolean>`, replaces browser `confirm()`
+- **Loader system** (`toast.js`) — centralized loading overlay, provides:
+  - `Loader.show()` — shows a centered spinner with live elapsed timer on a blurred dark backdrop
+  - `Loader.hide()` — hides the overlay (minimum 400ms display to prevent flicker)
 
 ### When editing JS files
 - **DO NOT** alter the core AJAX logic (URLs, methods, headers)
@@ -179,6 +191,7 @@ python manage.py createsuperuser
 - **DO** use `Toast.success/error/warning` instead of `alert()`
 - **DO** use `Toast.confirm()` instead of `confirm()`
 - **DO** add `Toast.error(xhr.responseJSON?.detail || '...')` in error handlers
+- **DO** wrap data-fetching AJAX calls with `Loader.show()` / `Loader.hide()` (success + error)
 
 ### CSS Architecture
 - `common.css` loaded FIRST on all pages — defines `:root` CSS variables, keyframes, toast styles, skeleton, scrollbar
