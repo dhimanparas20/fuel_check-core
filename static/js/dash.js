@@ -79,17 +79,14 @@ $(document).ready(function() {
     // Fetch and display vehicles
     function loadVehicles() {
         $('#vehicleDetailsBody').removeData('vehicle');
-        $('#vehiclesList').html(`
-            <div class="skeleton-card"></div>
-            <div class="skeleton-card" style="animation-delay:0.1s"></div>
-            <div class="skeleton-card" style="animation-delay:0.2s"></div>
-        `);
+        Loader.show();
 
         $.ajax({
             url: '/api/vehicles/',
             method: 'GET',
             headers: { 'Authorization': 'Bearer ' + access },
             success: function(data) {
+                Loader.hide();
                 $('#vehiclesList').empty();
                 if (data.length === 0) {
                     $('#vehiclesList').append(`
@@ -149,6 +146,7 @@ $(document).ready(function() {
                 }
             },
             error: function(xhr) {
+                Loader.hide();
                 if (xhr.status === 401) { localStorage.clear(); window.location.href = '/login'; }
                 else { Toast.error('Error', 'Failed to load vehicles.'); }
             }
@@ -160,22 +158,27 @@ $(document).ready(function() {
     // Add Vehicle Modal
     $('#vehicleModal').on('show.bs.modal', function(event) {
         const trigger = event.relatedTarget ? $(event.relatedTarget) : null;
-        if (!trigger || !$(trigger).data('id')) {
+        if (trigger && !$(trigger).data('id')) {
             $('#vehicleForm')[0].reset();
             $('#vehicleId').val('');
             $('#vehicleModalLabel').text('Add Vehicle');
             $('.modal-subtitle').text('Fill in the details below');
             return;
         }
-        const vehicleId = $(trigger).data('id');
-        $('#vehicleModalLabel').text('Edit Vehicle');
-        $('.modal-subtitle').text('Update vehicle information');
-        $.ajax({
-            url: `/api/vehicles/${vehicleId}/`,
-            method: 'GET',
-            headers: { 'Authorization': 'Bearer ' + access },
-            success: function(vehicle) { populateVehicleForm(vehicle); }
-        });
+        const vehicleId = trigger ? $(trigger).data('id') : null;
+        if (vehicleId) {
+            $('#vehicleModalLabel').text('Edit Vehicle');
+            $('.modal-subtitle').text('Update vehicle information');
+            $.ajax({
+                url: `/api/vehicles/${vehicleId}/`,
+                method: 'GET',
+                headers: { 'Authorization': 'Bearer ' + access },
+                success: function(vehicle) {
+                    populateVehicleForm(vehicle);
+                    $('#vehicleModalLabel').text('Edit Vehicle - ' + (vehicle.name || vehicle.regno));
+                }
+            });
+        }
     });
 
     $('#vehicleForm').submit(function(e) {
@@ -297,6 +300,8 @@ $(document).ready(function() {
         const cached = $('#vehicleDetailsBody').data('vehicle');
         if (cached && String(cached.id) === String(id)) {
             populateVehicleForm(cached);
+            $('#vehicleModalLabel').text('Edit Vehicle - ' + (cached.name || cached.regno));
+            $('.modal-subtitle').text('Update vehicle information');
             $('#vehicleModal').modal('show');
             return;
         }
@@ -306,7 +311,7 @@ $(document).ready(function() {
             headers: { 'Authorization': 'Bearer ' + access },
             success: function(vehicle) {
                 populateVehicleForm(vehicle);
-                $('#vehicleModalLabel').text('Edit Vehicle');
+                $('#vehicleModalLabel').text('Edit Vehicle - ' + (vehicle.name || vehicle.regno));
                 $('.modal-subtitle').text('Update vehicle information');
                 $('#vehicleModal').modal('show');
             }

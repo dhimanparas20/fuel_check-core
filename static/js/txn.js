@@ -74,11 +74,14 @@ $(document).ready(function() {
         if (sort) url += '&ordering=' + sort;
         if (filled) url += '&tank_fully_filled=' + filled;
 
+        Loader.show();
+
         $.ajax({
             url: url,
             method: 'GET',
             headers: { 'Authorization': 'Bearer ' + access },
             success: function(data) {
+                Loader.hide();
                 $('#txnList').empty();
                 var txns = Array.isArray(data) ? data : (data.results || []);
 
@@ -116,6 +119,7 @@ $(document).ready(function() {
                 }
             },
             error: function(xhr) {
+                Loader.hide();
                 if (xhr.status === 401) { localStorage.clear(); window.location.href = '/login'; }
                 else { Toast.error('Error', 'Failed to load transactions.'); }
             }

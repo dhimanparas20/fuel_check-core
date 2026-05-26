@@ -81,3 +81,56 @@ const Toast = {
         });
     }
 };
+
+const Loader = {
+    el: null,
+    timer: null,
+    startTime: null,
+    _hideTimer: null,
+
+    show() {
+        if (!this.el) {
+            this.el = document.createElement('div');
+            this.el.className = 'loading-overlay';
+            this.el.innerHTML = `
+                <div class="loading-box">
+                    <div class="loading-ring"></div>
+                    <div class="loading-label">Loading</div>
+                    <div class="loading-timer">0.0s</div>
+                </div>
+            `;
+            document.body.appendChild(this.el);
+        }
+        if (this.el.classList.contains('active')) return;
+        this.el.classList.add('active');
+        this.startTime = Date.now();
+        this._updateTimer();
+    },
+
+    _updateTimer() {
+        const elapsed = (Date.now() - this.startTime) / 1000;
+        const timerEl = this.el.querySelector('.loading-timer');
+        if (timerEl) timerEl.textContent = elapsed.toFixed(1) + 's';
+        this.timer = setTimeout(() => this._updateTimer(), 100);
+    },
+
+    hide() {
+        if (!this.el || !this.el.classList.contains('active')) return;
+        const elapsed = Date.now() - this.startTime;
+        const minShow = 400;
+        if (elapsed < minShow) {
+            clearTimeout(this._hideTimer);
+            this._hideTimer = setTimeout(() => this._hide(), minShow - elapsed);
+        } else {
+            this._hide();
+        }
+    },
+
+    _hide() {
+        if (this.timer) {
+            clearTimeout(this.timer);
+            this.timer = null;
+        }
+        this.el.classList.remove('active');
+    }
+};
