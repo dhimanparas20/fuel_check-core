@@ -17,5 +17,8 @@ else:
     print('Superuser already exists')
 "
 
+echo ">>> Collecting static files..."
+python manage.py collectstatic --noinput
+
 echo ">>> Starting Gunicorn..."
 exec gunicorn project.wsgi:application --bind 0.0.0.0:8000 --workers 1 --timeout 120 --reload --access-logfile - --error-logfile -
