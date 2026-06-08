@@ -12,137 +12,179 @@
     <link href="{% static 'css/txn.css' %}" rel="stylesheet">
 </head>
 <body class="txn-page">
-    <main class="txn-container">
-        <div class="txn-card">
-            <header class="txn-header">
-                <a href="/dashboard" class="back-btn" aria-label="Back to Dashboard">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
-                </a>
-                <h1 class="txn-title">Transactions</h1>
-                <span class="txn-vehicle-name"></span>
-            </header>
-            <div class="txn-controls">
-                <div class="search-sort-filter">
-                    <div class="control-group">
-                        <span class="control-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></span>
-                        <input type="text" class="control-input" id="searchInput" placeholder="Search by location...">
-                    </div>
-                    <div class="control-group">
-                        <span class="control-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l7.5 7.5v5l-2.5 2.5V21l5-2.5V11.5L21 3"></path></svg></span>
-                        <select class="control-select" id="sortSelect">
-                            <option value="created_at">Newest First</option>
-                            <option value="-created_at">Oldest First</option>
-                            <option value="amount">Amount (Low to High)</option>
-                            <option value="-amount">Amount (High to Low)</option>
-                            <option value="fuel_qty">Fuel Qty (Low to High)</option>
-                            <option value="-fuel_qty">Fuel Qty (High to Low)</option>
-                        </select>
-                    </div>
-                    <div class="control-group">
-                        <span class="control-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line></svg></span>
-                        <select class="control-select" id="filterFilled">
-                            <option value="">All</option>
-                            <option value="true">Tank Fully Filled</option>
-                            <option value="false">Not Fully Filled</option>
-                        </select>
-                    </div>
-                </div>
-                <button class="add-txn-btn" id="addTxnBtn">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                    <span>Add Transaction</span>
-                </button>
-            </div>
-            <div id="txnList" class="txn-grid"></div>
-            <!-- REMOVED: Pagination nav element -->
-        </div>
-    </main>
+<div class="dashboard-aurora"></div>
+<div class="dashboard-noise"></div>
 
-    <!-- Transaction Modal (Add/Edit) - Hidden by default via Bootstrap CSS -->
-    <div class="modal fade" id="txnModal" tabindex="-1" aria-labelledby="txnModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="txnModalLabel">Add/Edit Transaction</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="txnForm">
-                        <input type="hidden" id="txnId">
-                        <label class="field">
-                            <span class="field-label">Amount</span>
-                            <div class="field-control">
-                                <span class="field-icon">₹</span>
-                                <input type="number" step="0.01" id="amount" placeholder="e.g., 1000.50" required>
-                            </div>
-                        </label>
-                        <label class="field">
-                            <span class="field-label">Fuel Quantity</span>
-                            <div class="field-control">
-                                <span class="field-icon">L</span>
-                                <input type="number" step="0.01" id="fuel_qty" placeholder="e.g., 20.50" required>
-                            </div>
-                        </label>
-                        <label class="field">
-                            <span class="field-label">KMs Driven</span>
-                            <div class="field-control">
-                                <span class="field-icon">KM</span>
-                                <input type="number" step="0.01" id="kms_driven" placeholder="e.g., 450.50" required>
-                            </div>
-                        </label>
-                        <label class="field">
-                            <span class="field-label">Full Tank</span>
-                            <div class="field-control">
-                                <select id="tank_fully_filled" required>
-                                    <option value="false">No</option>
-                                    <option value="true">Yes</option>
-                                </select>
-                            </div>
-                        </label>
-                        <label class="field">
-                            <span class="field-label">Location</span>
-                            <div class="field-control" style="position:relative">
-                                <span class="field-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg></span>
-                                <input type="text" id="location" placeholder="e.g., City Petrol Pump" autocomplete="off">
-                                <div id="locationSuggestions" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--bg-card);border:1px solid var(--border);border-radius:0.65rem;z-index:10;max-height:180px;overflow-y:auto"></div>
-                            </div>
-                        </label>
-                        <label class="field">
-                            <span class="field-label optional-label">Transaction Date</span>
-                            <div class="field-control">
-                                <span class="field-icon">📅</span>
-                                <input type="date" id="txn_date" placeholder="Optional - defaults to today">
-                            </div>
-                        </label>
-                        <button type="submit" class="primary-btn">Save Transaction</button>
-                    </form>
-                </div>
+<nav class="txn-navbar">
+    <div class="nav-inner">
+        <div class="nav-left">
+            <a href="/dashboard" class="nav-brand">
+                <svg class="brand-icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                </svg>
+                <span class="brand-text">Fuel Check</span>
+            </a>
+        </div>
+        <div class="nav-center">
+            <a href="/dashboard" class="nav-link">Dashboard</a>
+        </div>
+        <div class="nav-right">
+            <span class="txn-vehicle-name"></span>
+        </div>
+    </div>
+</nav>
+
+<main class="txn-main">
+    <div class="txn-hero">
+        <div class="hero-left">
+            <a href="/dashboard" class="hero-back back-btn" aria-label="Back to Dashboard">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"/>
+                </svg>
+            </a>
+            <div class="hero-text">
+                <span class="hero-eyebrow">Transactions</span>
+                <h1 class="hero-title">Fuel Records</h1>
+                <p class="hero-subtitle">Track every fuel stop — amounts, mileage, and locations.</p>
+            </div>
+        </div>
+        <button class="hero-add-btn" id="addTxnBtn">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Add Transaction
+        </button>
+    </div>
+
+    <div class="txn-toolbar">
+        <div class="toolbar-controls">
+            <div class="toolbar-group search-group">
+                <svg class="toolbar-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                <input type="text" class="toolbar-input" id="searchInput" placeholder="Search by location..." autocomplete="off">
+            </div>
+            <div class="toolbar-group">
+                <svg class="toolbar-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 3l7.5 7.5v5l-2.5 2.5V21l5-2.5V11.5L21 3"/>
+                </svg>
+                <select class="toolbar-select" id="sortSelect">
+                    <option value="created_at">Newest First</option>
+                    <option value="-created_at">Oldest First</option>
+                    <option value="amount">Amount (Low to High)</option>
+                    <option value="-amount">Amount (High to Low)</option>
+                    <option value="fuel_qty">Fuel Qty (Low to High)</option>
+                    <option value="-fuel_qty">Fuel Qty (High to Low)</option>
+                </select>
+            </div>
+            <div class="toolbar-group">
+                <svg class="toolbar-icon" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/>
+                </svg>
+                <select class="toolbar-select" id="filterFilled">
+                    <option value="">All Fills</option>
+                    <option value="true">Tank Fully Filled</option>
+                    <option value="false">Not Fully Filled</option>
+                </select>
             </div>
         </div>
     </div>
 
-    <!-- Transaction Details Modal - Hidden by default via Bootstrap CSS -->
-    <div class="modal fade" id="txnDetailsModal" tabindex="-1" aria-labelledby="txnDetailsModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
+    <div id="txnList" class="txn-list"></div>
+</main>
+
+<!-- Transaction Modal (Add/Edit) -->
+<div class="modal fade" id="txnModal" tabindex="-1" aria-labelledby="txnModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title-wrapper">
+                    <h5 class="modal-title" id="txnModalLabel">Add Transaction</h5>
+                    <p class="modal-subtitle">Record a fuel purchase</p>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="txnForm">
+                    <input type="hidden" id="txnId">
+                    <label class="field">
+                        <span class="field-label">Amount</span>
+                        <div class="field-control">
+                            <span class="field-icon">₹</span>
+                            <input type="number" step="0.01" id="amount" placeholder="e.g., 1000.50" required>
+                        </div>
+                    </label>
+                    <label class="field">
+                        <span class="field-label">Fuel Quantity</span>
+                        <div class="field-control">
+                            <span class="field-icon">L</span>
+                            <input type="number" step="0.01" id="fuel_qty" placeholder="e.g., 20.50" required>
+                        </div>
+                    </label>
+                    <label class="field">
+                        <span class="field-label">KMs Driven</span>
+                        <div class="field-control">
+                            <span class="field-icon">KM</span>
+                            <input type="number" step="0.01" id="kms_driven" placeholder="e.g., 450.50" required>
+                        </div>
+                    </label>
+                    <label class="field">
+                        <span class="field-label">Full Tank</span>
+                        <div class="field-control">
+                            <select id="tank_fully_filled" required>
+                                <option value="false">No</option>
+                                <option value="true">Yes</option>
+                            </select>
+                        </div>
+                    </label>
+                    <label class="field">
+                        <span class="field-label">Location</span>
+                        <div class="field-control" style="position:relative">
+                            <span class="field-icon"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg></span>
+                            <input type="text" id="location" placeholder="e.g., City Petrol Pump" autocomplete="off">
+                            <div id="locationSuggestions"></div>
+                        </div>
+                    </label>
+                    <label class="field">
+                        <span class="field-label optional-label">Transaction Date</span>
+                        <div class="field-control">
+                            <span class="field-icon">📅</span>
+                            <input type="date" id="txn_date" placeholder="Optional - defaults to today">
+                        </div>
+                    </label>
+                    <button type="submit" class="primary-btn">Save Transaction</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Transaction Details Modal -->
+<div class="modal fade" id="txnDetailsModal" tabindex="-1" aria-labelledby="txnDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title-wrapper">
                     <h5 class="modal-title" id="txnDetailsModalLabel">Transaction Details</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <p class="modal-subtitle">Complete breakdown</p>
                 </div>
-                <div class="modal-body" id="txnDetailsContent">
-                    <!-- Filled dynamically with JS -->
-                </div>
-                <div id="txnMapContainer" class="txn-map-container" style="display:none">
-                    <div id="txnMap" style="width:100%;height:100%"></div>
-                </div>
-                <div id="txnComparison" style="padding:0 1.5rem 1rem"></div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
+            <div class="modal-body" id="txnDetailsContent">
+                <!-- Filled dynamically with JS -->
+            </div>
+            <div id="txnMapContainer" class="txn-map-container" style="display:none">
+                <div id="txnMap" style="width:100%;height:100%"></div>
+            </div>
+            <div id="txnComparison" style="padding:0 1.5rem 1rem"></div>
         </div>
     </div>
+</div>
 
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="{% static 'js/toast.js' %}"></script>
-    <script src="{% static 'js/txn.js' %}"></script>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="{% static 'js/toast.js' %}"></script>
+<script src="{% static 'js/txn.js' %}"></script>
 </body>
 </html>

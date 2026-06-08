@@ -262,7 +262,7 @@ function runAction(type) {
     var btn = document.getElementById(type === 'migrate' ? 'btnMigrate' : 'btnCollect');
     var out = document.getElementById('actionOutput');
     var label = type === 'migrate' ? 'Run Migrations' : 'Collect Static';
-    var url = '/status/' + (type === 'migrate' ? 'migrate/' : 'collectstatic/');
+    var url = '/system/' + (type === 'migrate' ? 'migrate/' : 'collectstatic/');
 
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner"></span> Running...';

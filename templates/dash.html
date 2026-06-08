@@ -13,20 +13,71 @@
 <body class="dashboard-body">
 <div class="dashboard-aurora"></div>
 <div class="dashboard-noise"></div>
-<div class="container py-5 dashboard-content">
-    <div class="dashboard-header mb-5">
-        <div>
-            <p class="eyebrow text-uppercase mb-2">Fuel Check</p>
-            <h2 class="display-6 fw-bold mb-2">My Vehicles</h2>
-            <p class="lead mb-0" style="color:rgba(200,215,230,0.85)">Tap into any card to review its transactions, stats, and fueling story.</p>
+
+<!-- Navbar -->
+<nav class="dash-navbar">
+    <div class="nav-inner">
+        <div class="nav-left">
+            <a href="/dashboard" class="nav-brand">
+                <svg class="brand-icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                </svg>
+                <span class="brand-text">Fuel Check</span>
+            </a>
         </div>
-        <div class="d-flex flex-wrap gap-3">
-            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#vehicleModal">Add Vehicle</button>
-            <button class="btn btn-outline-light" id="logoutBtn">Logout</button>
+        <div class="nav-center">
+            <a href="/dashboard" class="nav-link active">Dashboard</a>
+        </div>
+        <div class="nav-right">
+            <button id="logoutBtn" class="nav-logout" title="Sign out">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                    <polyline points="16 17 21 12 16 7"/>
+                    <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+                <span>Logout</span>
+            </button>
         </div>
     </div>
+</nav>
+
+<main class="dash-main">
+    <!-- Hero -->
+    <div class="dash-hero">
+        <div class="hero-text">
+            <span class="hero-eyebrow">Dashboard</span>
+            <h1 class="hero-title">My Vehicles</h1>
+            <p class="hero-subtitle">Track fuel consumption, mileage, and expenses across your fleet.</p>
+        </div>
+        <button class="hero-add-btn" data-bs-toggle="modal" data-bs-target="#vehicleModal">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Add Vehicle
+        </button>
+    </div>
+
+    <!-- Summary Stats -->
+    <div id="summaryStats" class="summary-strip"></div>
+
+    <!-- Toolbar -->
+    <div class="dash-toolbar">
+        <div class="search-box">
+            <svg class="search-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input type="text" id="vehicleSearch" class="search-input" placeholder="Search by name, registration, model..." autocomplete="off">
+            <button class="search-clear" id="searchClear" style="display:none" aria-label="Clear search">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <span class="vehicle-count" id="vehicleCount"></span>
+    </div>
+
+    <!-- Vehicle Grid -->
     <div id="vehiclesList"></div>
-</div>
+</main>
+
 <!-- Vehicle Modal -->
 <div class="modal fade" id="vehicleModal" tabindex="-1" aria-labelledby="vehicleModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
@@ -133,6 +184,7 @@
         </div>
     </div>
 </div>
+
 <!-- Vehicle Details Modal -->
 <div class="modal fade" id="vehicleDetailsModal" tabindex="-1" aria-labelledby="vehicleDetailsModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
@@ -150,9 +202,10 @@
         </div>
     </div>
 </div>
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{% static 'js/toast.js' %}"></script>
-    <script src="{% static 'js/dash.js' %}"></script>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{% static 'js/toast.js' %}"></script>
+<script src="{% static 'js/dash.js' %}"></script>
 </body>
 </html>

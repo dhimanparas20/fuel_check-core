@@ -76,6 +76,69 @@ $(document).ready(function() {
         $('#average_mileage').val(sanitizeFormValue(vehicle.average_mileage));
     }
 
+    // Summary stats
+    function updateSummaryStats(vehicles) {
+        const total = vehicles.length;
+        const totalKms = vehicles.reduce(function(s, v) { return s + (parseFloat(v.total_kms_driven) || 0); }, 0);
+        const totalSpent = vehicles.reduce(function(s, v) { return s + (parseFloat(v.money_used) || 0); }, 0);
+        var avgMileage = '—';
+        var mileages = vehicles.filter(function(v) { return v.average_mileage != null && v.average_mileage > 0; });
+        if (mileages.length > 0) {
+            var sum = mileages.reduce(function(s, v) { return s + parseFloat(v.average_mileage); }, 0);
+            avgMileage = (sum / mileages.length).toFixed(1) + ' km/L';
+        }
+
+        $('#summaryStats').html(
+            '<div class="summary-stat-card">' +
+                '<div class="stat-card-icon blue">🚗</div>' +
+                '<div class="stat-card-body">' +
+                    '<span class="stat-card-label">Vehicles</span>' +
+                    '<span class="stat-card-value" id="statVehicles">' + total + '</span>' +
+                '</div>' +
+            '</div>' +
+            '<div class="summary-stat-card">' +
+                '<div class="stat-card-icon amber">📏</div>' +
+                '<div class="stat-card-body">' +
+                    '<span class="stat-card-label">Total KMs</span>' +
+                    '<span class="stat-card-value amber" id="statKms">' + Number(totalKms).toLocaleString() + '</span>' +
+                '</div>' +
+            '</div>' +
+            '<div class="summary-stat-card">' +
+                '<div class="stat-card-icon green">💰</div>' +
+                '<div class="stat-card-body">' +
+                    '<span class="stat-card-label">Total Spent</span>' +
+                    '<span class="stat-card-value green" id="statSpent">₹' + Number(totalSpent).toFixed(2) + '</span>' +
+                '</div>' +
+            '</div>' +
+            '<div class="summary-stat-card">' +
+                '<div class="stat-card-icon purple">📊</div>' +
+                '<div class="stat-card-body">' +
+                    '<span class="stat-card-label">Avg Mileage</span>' +
+                    '<span class="stat-card-value blue" id="statMileage">' + avgMileage + '</span>' +
+                '</div>' +
+            '</div>'
+        );
+    }
+
+    function updateVehicleCount(count) {
+        $('#vehicleCount').text(count + ' vehicle' + (count !== 1 ? 's' : ''));
+    }
+
+    // Search
+    function filterVehicles() {
+        var query = $('#vehicleSearch').val().toLowerCase().trim();
+        var visible = 0;
+        $('.vehicle-card-item').each(function() {
+            var text = $(this).text().toLowerCase();
+            var match = !query || text.indexOf(query) !== -1;
+            $(this).toggle(match);
+            if (match) visible++;
+        });
+        $('#searchClear').toggle(query.length > 0);
+        var total = $('.vehicle-card-item').length;
+        $('#vehicleCount').text(visible + ' of ' + total + ' vehicle' + (total !== 1 ? 's' : ''));
+    }
+
     // Fetch and display vehicles
     function loadVehicles() {
         $('#vehicleDetailsBody').removeData('vehicle');
@@ -87,6 +150,7 @@ $(document).ready(function() {
             headers: { 'Authorization': 'Bearer ' + access },
             success: function(data) {
                 Loader.hide();
+                updateSummaryStats(data);
                 $('#vehiclesList').empty();
                 if (data.length === 0) {
                     $('#vehiclesList').append(`
@@ -143,6 +207,7 @@ $(document).ready(function() {
                         `);
                         $('#vehiclesList').append(card);
                     });
+                    updateVehicleCount(data.length);
                 }
             },
             error: function(xhr) {
@@ -415,6 +480,13 @@ $(document).ready(function() {
                 $('#carLookupStatus').text('Lookup failed. CarQuery API may be unavailable.');
             }
         });
+    });
+
+    // Search
+    $('#vehicleSearch').on('input', filterVehicles);
+
+    $('#searchClear').click(function() {
+        $('#vehicleSearch').val('').trigger('input').focus();
     });
 
     $('#logoutBtn').click(function() {

@@ -125,7 +125,7 @@ Each vehicle card shows mileage, total kilometers, and money spent. Click **Deta
 | Dashboard | `/dashboard/` | View, add, edit, delete vehicles |
 | Transactions | `/txn/<id>/` | View, add, edit, delete fuel transactions |
 | Analytics | `/analytics/<id>/` | Charts, stats, and service records |
-| System Status | `/status/` | Database connection info (password-protected) |
+| System Status | `/system/` | Database connection info, migrations, collectstatic (password-protected) |
 | Health Check | `/health/` | Returns "OK" (used by Docker) |
 | Admin Panel | `/admin/` | Django admin for direct data management |
 
@@ -151,9 +151,9 @@ Copy `.env.sample` to `.env` and adjust as needed.
 | `AWS_SECRET_ACCESS_KEY` | — | AWS secret key |
 | `AWS_STORAGE_BUCKET_NAME` | — | S3 bucket name |
 | `AWS_S3_REGION_NAME` | `us-east-1` | AWS region |
-| `STATUS_USER` | `admin` | Username for `/status/` page |
-| `STATUS_PASS` | `status123` | Password for `/status/` page |
+| `STATUS_USER` | `admin` | Username for `/system/` page |
 
+| `STATUS_PASS` | `status123` | Password for `/system/` page |
 ---
 
 ## Tech Stack
@@ -236,7 +236,7 @@ GET    /api/vehicles/{id}/analytics/         Summary, mileage/spending/price tre
 ### System
 ```
 GET    /health/                              Plain "OK" (no auth)
-GET    /status/                              HTML page, HTTP Basic Auth
+GET    /system/                              HTML page, HTTP Basic Auth
 ```
 
 ---
@@ -278,6 +278,6 @@ fuel_check-core/
 
 ## Need Help?
 
-- **Status page**: Visit `/status/` to see if your database is connected
+- **System page**: Visit `/system/` to see database stats, run migrations, collect static
 - **Health check**: `/health/` returns "OK" when the server is running
 - **Logs**: `docker compose logs -f` to watch live logs

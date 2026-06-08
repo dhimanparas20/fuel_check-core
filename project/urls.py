@@ -127,9 +127,9 @@ def run_collectstatic(request):
 urlpatterns = [
     path("health/", health_check, name="health"),
     path("ping/", health_check, name="ping"),
-    path("status/", status_view, name="status"),
-    path("status/migrate/", run_migrate, name="run-migrate"),
-    path("status/collectstatic/", run_collectstatic, name="run-collectstatic"),
+    path("system/", status_view, name="status"),
+    path("system/migrate/", run_migrate, name="run-migrate"),
+    path("system/collectstatic/", run_collectstatic, name="run-collectstatic"),
     path("favicon.ico", lambda r: HttpResponse(status=204)),
     path("admin/", admin.site.urls),
     path("user/", include("user.urls")),

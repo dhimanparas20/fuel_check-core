@@ -16,7 +16,7 @@ This document is the **single source of truth** for any AI agent working on this
 fuel_check-core/
 ├── project/                    # Django project config
 │   ├── settings.py             # ALL config: DB, static, JWT, CORS, timezone
-│   ├── urls.py                 # Root URL routing + /health/ + /status/ + /analytics/
+│   ├── urls.py                 # Root URL routing + /health/ + /system/ + /analytics/
 │   └── wsgi.py                 # WSGI entry (used by gunicorn)
 ├── fuel_check/                 # Main app — vehicles, transactions & services
 │   ├── models.py               # Vehicle + Txn + ServiceRecord models + recalculate_stats()
@@ -83,8 +83,8 @@ fuel_check-core/
 | `AWS_SECRET_ACCESS_KEY` | — | AWS secret key (if S3 enabled) |
 | `AWS_STORAGE_BUCKET_NAME` | — | S3 bucket name |
 | `AWS_S3_REGION_NAME` | — | S3 region (default: us-east-1) |
-| `STATUS_USER` | `admin` | HTTP Basic Auth username for `/status/` |
-| `STATUS_PASS` | `status123` | HTTP Basic Auth password for `/status/` |
+| `STATUS_USER` | `admin` | HTTP Basic Auth username for `/system/` |
+| `STATUS_PASS` | `status123` | HTTP Basic Auth password for `/system/` |
 | `SUPERUSER_EMAIL` | `admin@example.com` | Email for auto-created superuser |
 | `SUPERUSER_PASSWORD` | `Mst@2069` | Password for auto-created superuser |
 
@@ -169,7 +169,7 @@ python manage.py <cmd>            # or: manage <cmd>
 /analytics/<id>/ → Charts, stats, service records
 /admin/        → Django admin
 /health/       → Plain "OK" (Docker healthcheck)
-/status/       → DB connection stats (HTTP Basic Auth)
+/system/       → DB connection stats, migrations, collectstatic (HTTP Basic Auth)
 ```
 
 ### JS Dependencies
@@ -267,7 +267,7 @@ DELETE /api/txns/{id}/        Delete
 ### System
 ```
 GET    /health/               → 200 "OK" (no auth, Docker healthcheck)
-GET    /status/               → HTML page, HTTP Basic Auth (STATUS_USER/STATUS_PASS)
+GET    /system/               → HTML page, HTTP Basic Auth (STATUS_USER/STATUS_PASS)
 ```
 
 ---

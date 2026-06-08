@@ -10,7 +10,23 @@
     <link href="{% static 'css/login.css' %}" rel="stylesheet">
 </head>
 <body class="auth-page">
-<main class="auth-container">
+<div class="auth-aurora"></div>
+<div class="auth-noise"></div>
+
+<nav class="auth-navbar">
+    <div class="nav-inner">
+        <div class="nav-left">
+            <a href="/login" class="nav-brand">
+                <svg class="brand-icon" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                </svg>
+                <span class="brand-text">Fuel Check</span>
+            </a>
+        </div>
+    </div>
+</nav>
+
+<main class="auth-main">
     <div class="auth-card">
         <div class="auth-brand">
             <span class="brand-icon" aria-hidden="true">⛽</span>
@@ -48,7 +64,7 @@
 
             <form id="registerForm" class="auth-form" data-view="register" autocomplete="off" novalidate>
                 <h2 class="auth-title">Create account</h2>
-                <p class="auth-copy">Fill in your details and you’ll be ready to track in a minute.</p>
+                <p class="auth-copy">Fill in your details and you'll be ready to track in a minute.</p>
                 <div class="field-row">
                     <label class="field">
                         <span class="field-label">First name</span>
@@ -86,8 +102,13 @@
             </form>
         </section>
     </div>
+
+    <div class="auth-footer">
+        <span>Track every drop. Know every kilometer.</span>
+    </div>
 </main>
-    <script src="{% static 'js/toast.js' %}"></script>
-    <script src="{% static 'js/login.js' %}"></script>
+
+<script src="{% static 'js/toast.js' %}"></script>
+<script src="{% static 'js/login.js' %}"></script>
 </body>
 </html>
