@@ -7,9 +7,17 @@
         "maxLambdaSize": "15mb",
         "runtime": "python3.13"
       }
+    },
+    {
+      "src": "static/**",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
+    {
+      "src": "/static/(.*)",
+      "dest": "/static/$1"
+    },
     {
       "src": "/(.*)",
       "dest": "project/wsgi.py"

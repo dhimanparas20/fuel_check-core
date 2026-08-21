@@ -146,7 +146,7 @@ Copy `.env.sample` to `.env` and adjust as needed.
 | `DB_PASSWORD` | `postgres` | Database password |
 | `DB_HOST` | `localhost` | Database host address |
 | `DB_PORT` | `5432` | Database port |
-| `USE_AWS_S3` | `False` | `True` = host static files on AWS S3 |
+| `USE_AWS_S3` | `False` | `True` = host static/media on AWS S3; `False` = `/static/` from app (local/Docker via WhiteNoise, Vercel via `@vercel/static`) |
 | `AWS_ACCESS_KEY_ID` | — | AWS access key |
 | `AWS_SECRET_ACCESS_KEY` | — | AWS secret key |
 | `AWS_STORAGE_BUCKET_NAME` | — | S3 bucket name |
@@ -163,7 +163,7 @@ Copy `.env.sample` to `.env` and adjust as needed.
 | Backend | Django 6.0, Django REST Framework |
 | Auth | JWT (SimpleJWT) — access token 4 weeks |
 | Database | SQLite (local) or PostgreSQL (remote) |
-| Static Files | Local filesystem or AWS S3 (via WhiteNoise) |
+| Static Files | Local: WhiteNoise + `collectstatic`. Vercel (`USE_AWS_S3=False`): `static/**` via `@vercel/static` → `/static/*`. Or AWS S3 when `USE_AWS_S3=True` |
 | Frontend | Bootstrap 5.3, jQuery 3.7, Chart.js, Leaflet, custom CSS/JS |
 | Container | Docker + Gunicorn + docker-compose |
 | Package Manager | uv |

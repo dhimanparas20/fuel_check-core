@@ -78,7 +78,7 @@ fuel_check-core/
 | `DB_PASSWORD` | `postgres` | PostgreSQL password |
 | `DB_HOST` | `localhost` | PostgreSQL host |
 | `DB_PORT` | `5432` | PostgreSQL port |
-| `USE_AWS_S3` | `False` | Enable S3 static/media storage |
+| `USE_AWS_S3` | `False` | Enable S3 static/media storage. When `False`, `STATIC_URL=/static/` (Vercel serves `static/` via CDN; Docker/local use WhiteNoise after collectstatic) |
 | `AWS_ACCESS_KEY_ID` | — | AWS access key (if S3 enabled) |
 | `AWS_SECRET_ACCESS_KEY` | — | AWS secret key (if S3 enabled) |
 | `AWS_STORAGE_BUCKET_NAME` | — | S3 bucket name |
@@ -293,7 +293,7 @@ GET    /system/               → HTML page, HTTP Basic Auth (STATUS_USER/STATUS
 2. **Database not switching**: Database is controlled SOLELY by `USE_REMOTE_DB` env var, not by presence of DB_* vars.
 3. **`python` not found in container**: Venv is at `/opt/venv/bin`, which is in PATH via Dockerfile ENV. Rebuild if PATH is missing.
 4. **Gunicorn worker timeout**: Workers=1, timeout=120s in dev. Gunicorn uses `--reload` for live code updates.
-5. **Static files 404**: Run `python manage.py collectstatic` inside container, or set `DEBUG=True`.
+5. **Static files 404 on Vercel**: Django/WhiteNoise cannot serve source `static/` on serverless. `vercel.json` must build `static/**` with `@vercel/static` and route `/static/(.*)` **before** the WSGI catch-all. With `USE_AWS_S3=True`, assets come from S3 instead. On Docker: run `collectstatic` (entrypoint does this when `DEBUG=True`).
 6. **401 on API calls**: JWT stored in `localStorage` with key `access`. Check browser console.
 7. **CORS**: `corsheaders` is installed in apps but `CorsMiddleware` is NOT in middleware. CORS config may need `CORS_ALLOW_ALL_ORIGINS=True` for dev.
 
